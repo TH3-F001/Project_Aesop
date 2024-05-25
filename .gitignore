@@ -1,3 +1,6 @@
 *.yaml
 *.yml
 *.json
+venv
+env
+*__pycache__
