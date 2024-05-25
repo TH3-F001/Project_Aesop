@@ -25,11 +25,11 @@ class WebBrowser:
         self.driver = webdriver.Firefox(options=self.options, service=self.service)
 
         # Load cache and cookies if avaliable:
-        if self.has_cookies:
+        if self.has_cookies():
             print("has_cookies")
             # self.load_cookies()
-        if self.has_local_storage:
-            print("has_stragage")
+        if self.has_local_storage():
+            print("has_storage")
             # self.load_local_storage()
         
 
@@ -47,6 +47,7 @@ class WebBrowser:
 
     def has_cookies(self):
         if os.path.exists(self.cookie_path):
+            print("pookie")
             if (os.path.getsize(self.cookie_path) > 0):
                 return True
         return False
