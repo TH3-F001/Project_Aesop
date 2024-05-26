@@ -14,13 +14,14 @@ import json
 import os
 import shutil
 import random
-
+import pickle
+import tldextract
 
 class WebBrowser:
     def __init__(self, wait_time):
         # Set Filepaths:
         self.geckodriver_path = 'appdata/geckodriver'
-        self.cookie_path = 'appdata/cookies.json'
+        self.cookie_path = 'appdata/cookies.pkl'
         self.local_storage_path = 'appdata/local_storage.json'
         self.sessions_path = 'appdata/sessions.json'
 
@@ -52,6 +53,7 @@ class WebBrowser:
             "tag_name": By.TAG_NAME
         }
 
+
 #region Genereal Utilities
     def find_firefox_binary(self):
         firefox_binary_paths = [
@@ -72,7 +74,16 @@ class WebBrowser:
         raise FileNotFoundError("Firefox binary not found. Please install Firefox or specify the binary location.")
 
 
-    def get(self, url=""):
+    def get_root_domain(self, url):
+        parsed_url = tldextract.extract(self.driver.current_url)
+        root_domain = f"{parsed_url.domain}.{parsed_url.suffix}"
+        return root_domain
+    
+#endregion
+
+    
+#region Browser Control
+    def goto_url(self, url=""):
         if url != "":
             try:
                 result = self.driver.get(url)
@@ -80,10 +91,8 @@ class WebBrowser:
                 print("Invalid URL! Try again!")
                 return
             return result
-#endregion
 
-    
-#region Browser Control
+
     def save_and_close(self):
         self.save_local_storage
         self.save_cookies
@@ -117,44 +126,49 @@ class WebBrowser:
 
         return self.wait.until(EC.presence_of_element_located((locator, tag)))
 
-#region Cookies
+
+    def get_cookies(self):
+        return self.driver.get_cookies()
+
+    #endregion
+
+#region Cookie Management
     def has_cookies(self, url):
+        result = False
+        domain = self.get_root_domain(url)
+
         if os.path.exists(self.cookie_path):
-            if os.path.getsize(self.cookie_path) > 0:
-                with open(self.cookie_path, 'r') as file:
-                    cookies = json.load(file)
-                
-                # Parse the domain from the URL
-                domain = urlparse(url).netloc
-
-                # Check if any cookie belongs to the specified domain
+            try:
+                cookies = pickle.load(open(self.cookie_path, "rb"))
                 for cookie in cookies:
-                    if domain in cookie['domain']:
-                        return True
-        return False
+                    if domain in cookie["domain"]:
+                        result = True
+            except Exception as e:
+                return False
+
+        return result
 
 
-    def save_cookies(self, url):
+    def save_cookies(self):
+        # if not os.path.exists(os.path.dirname(self.cookie_path)):
+        #     os.makedirs(os.path.dirname(self.cookie_path))
+        #
         cookies = self.driver.get_cookies()
-        with open(self.cookie_path, 'w') as file:
-            json.dump(cookies, file)
+        pickle.dump(cookies, open(self.cookie_path, "wb"))
 
 
-    def load_cookies(self, url):
-        # Navigate to the provided URL
-        self.driver.get(url)
-        
-        # Load cookies from file and add them to the browser
-        with open(self.cookie_path, 'r') as file:
-            cookies = json.load(file)
-        
-        # Parse the domain from the URL
-        domain = urlparse(url).netloc
+    def load_cookies(self):
+        cookies = pickle.load(open(self.cookie_path, "rb"))
+        root_domain = self.get_root_domain(self.driver.current_url)
 
-        # Add cookies for the specified domain
         for cookie in cookies:
-            if domain in cookie['domain']:
-                self.driver.add_cookie(cookie)
+            if root_domain in cookie['domain']:
+                # cookie['domain'] = f".{root_domain}"
+                try:
+                    self.driver.add_cookie(cookie)
+                except Exception as e:
+                    print(e)
+
 #endregion
 
 
