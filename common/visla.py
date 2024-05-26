@@ -12,13 +12,12 @@ class Visla:
         self.login_url = "https://app.visla.us/signin"
         self.browser = WebBrowser(10)
         
-
-        
-        # Load Visla Config File into self.conf
+        # Create visla config file if it doesnt already exist
         conf_file = "appdata/visla.yaml"
         if not os.path.exists(conf_file):
             self.create_config_file()
 
+        # Load visla config file into self.conf
         with open(conf_file, 'r') as file:
             self.conf = yaml.safe_load(file)
         self.browser = WebBrowser(10)
