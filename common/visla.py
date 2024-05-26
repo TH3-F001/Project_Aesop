@@ -1,67 +1,80 @@
 from common.browser import WebBrowser
-from selenium.webdriver.common.by import By
-from selenium.webdriver.common.action_chains import ActionChains
-import yaml
-import json
+
 from time import sleep
+
+import yaml
 import os
-import shutil
+
 
 class Visla:
     def __init__(self):
         self.home_url = "https://app.visla.us/home"
         self.login_url = "https://app.visla.us/signin"
-        self.conf_file = "appdata/visla.yaml"
-        # Grab Configuration from visla.yaml
-
-        if not os.path.exists(self.conf_file):
-            self.create_config_file()
+        self.browser = WebBrowser(10)
         
-        with open(self.conf_file, 'r') as file:
+
+        
+        # Load Visla Config File into self.conf
+        conf_file = "appdata/visla.yaml"
+        if not os.path.exists(conf_file):
+            self.create_config_file()
+
+        with open(conf_file, 'r') as file:
             self.conf = yaml.safe_load(file)
-        self.browser = WebBrowser()
+        self.browser = WebBrowser(10)
+        
+        # Load Root Prompt file into self.root_prompt
+        root_prompt_file = "appdata/visla_root_prompt.txt"
+        with open(root_prompt_file, 'r') as file:
+            self.root_prompt = yaml.safe_load(file)
+        
 
 
-    def find_firefox_binary(self):
-        firefox_binary_paths = [
-            '/bin/firefox',
-            '/usr/bin/firefox',
-            '/usr/local/bin/firefox',
-            'C:\\Program Files\\Mozilla Firefox\\firefox.exe',
-            'C:\\Program Files (x86)\\Mozilla Firefox\\firefox.exe'
-        ]
-        for path in firefox_binary_paths:
-            if os.path.exists(path):
-                return path
+    def create_config_file(self):
+        print("Config file not found. Please enter your credentials.")
+        email = input("Enter your email: ")
+        password = input("Enter your password: ")
 
-        # If not found, try to locate using which command on Unix-based systems
-        firefox_path = shutil.which('firefox')
-        if firefox_path:
-            return firefox_path
-        raise FileNotFoundError("Firefox binary not found. Please install Firefox or specify the binary location.")
+        # Create a dictionary for the configuration
+        conf = {
+            'creds': {
+                'email': email,
+                'password': password
+            }
+        }
+
+
+    def login(self):
+        print("going to ", self.home_url)
+        self.browser.get(self.home_url)
+        if self.browser.has_cookies(self.home_url):  
+            self.browser.load_cookies(self.login_url)
+        else:
+            print("Logging in to Visla...")
+            email = self.conf["creds"]["email"]
+            pw = self.conf["creds"]["password"]
+
+            email_field = self.browser.get_element("name", "email")
+            password_field = self.browser.get_element("name", "password")
+
+            self.browser.type_keys(email_field, email)
+            self.browser.type_keys(password_field, pw)
+            self.browser.type_enter(password_field)
+
+            create_vid_btn = self.browser.get_element("id", "Create Video")
+            
+            # if create_vid_btn:
+                
+
+
+
+            # sleep(5)
+
+            # self.browser.save_cookies()
+            # self.browser.save_local_storage()
 
 
     def open_homepage(self):
         self.browser.get(self.home_url)
         sleep(1)
         
-
-
-    def sign_in_for_first_time(self):
-        if not self.browser.has_cookies():
-            email = self.conf["creds"]["email"]
-            pw = self.conf["creds"]["password"]
-
-            self.browser.get(self.login_url)
-            print("going to ", self.login_url)
-            self.find_and_click_on_google_login()
-
-    def find_and_click_on_google_login(self):
-        driver = self.browser.driver
-        iframe = driver.find_element(by=By.XPATH, value="//iframe[starts-with(@src, 'https://accounts.google.com/gsi/button')]")
-        x = iframe.location['x']
-        y = iframe.location['y']
-        actions = ActionChains(driver)
-        actions.move_by_offset(x , y)  # Adjusting +10 to click just inside the iframe
-        actions.click()
-        actions.perform()

@@ -6,9 +6,7 @@ from time import sleep
 
 def main():
     visla = Visla()
-    visla.open_homepage()
-    sleep(2)
-    visla.sign_in_for_first_time()
+    visla.login()
 
 
 if __name__ == '__main__':
