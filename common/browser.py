@@ -151,23 +151,51 @@ class WebBrowser:
         actions.move_by_offset(center_x, center_y).click().perform()
         actions.move_by_offset(-center_x, -center_y).perform()  # Move back to the origin
 
+    def click_top_screen(self):
+        window_size = self.driver.get_window_size()
+        center_x = window_size['width'] / 2
+        top_y = 5
+
+        actions = ActionChains(self.driver)
+        actions.move_by_offset(center_x, top_y).click().perform()
+        actions.move_by_offset(-center_x, -top_y).perform()
+
+    def wait_for_element(self, time: float, by: str, tag: str):
+        if by in self.by_dict:
+            locator = self.by_dict[by]
+        else:
+            print(f"Error: {by} is not in by_dict:\n{self.by_dict}")
+            return None
+
+        wait = WebDriverWait(self.driver, time)
+        return wait.until(EC.presence_of_element_located((locator, tag)))
 
 #endregion
 
 
 #region Browser Data Retrieval
-    def get_element(self, by="", tag=""):
+    def get_cookies(self):
+        return self.driver.get_cookies()
+
+
+    def get_element(self, by: str, tag: str):
         if by in self.by_dict:
             locator = self.by_dict[by]
         else:
             print(f"Error {by} is not in by_dict:\n{self.by_dict}")
-        # raise ValueError(f"Invalid locator strategy: '{by}'. Valid strategies are: {list(self.by_dict.keys())}")
 
         return self.wait.until(EC.presence_of_element_located((locator, tag)))
 
+    def get_elements(self, by: str, tag: str):
+        if by in self.by_dict:
+            locator = self.by_dict[by]
+        else:
+            print(f"Error {by} is not in by_dict:\n{self.by_dict}")
 
-    def get_cookies(self):
-        return self.driver.get_cookies()
+        return self.driver.find_elements(locator, tag)
+
+    def get_current_url(self):
+        return self.driver.current_url
 
     #endregion
 

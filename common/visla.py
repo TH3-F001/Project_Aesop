@@ -68,8 +68,56 @@ class Visla:
 
 
     def create_video(self):
+        if not self.browser.get_current_url() == self.home_url:
+            print("ERROR: You must log in to visla before creating a video")
+            return None
+
+        # Click the new video button
+        print("Clicking 'Create a New Video...")
+        create_video_btn = self.browser.get_element("id", "Create Video")
+        self.browser.click(create_video_btn)
+
+        # Type in root prompt
+        print("Typing Root Prompt...")
         root_prompt = self.get_root_prompt()
-        
+        input_field = self.browser.get_element("xpath", "//textarea[@placeholder]")
+        sleep(1)
+        self.browser.type_keys(input_field, root_prompt)
+
+        # Use Only Free Stock
+        print("Clicking Generate Options Button...")
+        generate_options_btn = self.browser.get_element("class_name", "visla-button-only-icon")
+        self.browser.click(generate_options_btn)
+        print("Clicking Premium Stock CheckBoxes...")
+
+        #!TODO Checkboxes are not being generated properly!
+
+        premium_stock_checkboxes = self.browser.get_elements("css_selector", "input[name='usePremiumStock']")
+        print(premium_stock_checkboxes)
+        for checkbox in premium_stock_checkboxes:
+            self.browser.click(checkbox)
+            print("CheckBox Clicked:", checkbox)
+        self.browser.click_top_screen()
+
+        # Generate Video
+        print("Clicking Generate Video Button...")
+        generate_btn = self.browser.get_element("class_name", "visla-button-primary")
+        self.browser.click(generate_btn)
+
+        # Wait for video to generate
+        print("Waiting for Video to generate...")
+        self.browser.wait_for_element(300, "tag_name", "canvas", )
+        self.browser.click_top_screen()
+
+        # Export video
+        print("Exporting Video...")
+        export_button = self.browser.get_element("class_name", "ug-export-video",)
+        self.browser.click(export_button)
+
+        sleep(1000)
+
+        options_button = self.browser.get_element("xpath", "//*[name()='svg' and @xmlns='http://www.w3.org/2000/svg']")
+
 
     def open_homepage(self):
         self.browser.get(self.home_url)
@@ -100,7 +148,7 @@ class Visla:
 
     def get_root_prompt(self):
         with open(self.root_prompt_file, 'r') as file:
-            root_prompt = yaml.safe_load(file)
+            root_prompt = file.read()
 
         return root_prompt
 #endregion
