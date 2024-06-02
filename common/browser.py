@@ -45,8 +45,8 @@ class WebBrowser:
 
 
 
-#region Genereal Utilities
-    def find_firefox_binary(self):
+#region General Utilities (Private)
+    def _find_firefox_binary(self):
         firefox_binary_paths = [
             '/bin/firefox',
             '/usr/bin/firefox',
@@ -65,13 +65,13 @@ class WebBrowser:
         raise FileNotFoundError("Firefox binary not found. Please install Firefox or specify the binary location.")
 
 
-    def get_root_domain(self, url):
+    def _get_root_domain(self, url):
         parsed_url = tldextract.extract(self.driver.current_url)
         root_domain = f"{parsed_url.domain}.{parsed_url.suffix}"
         return root_domain
 
 
-    def url_is_valid(self, url=""):
+    def _url_is_valid(self, url=""):
         result = False
         try:
             response = requests.head(url, allow_redirects=True)
@@ -80,20 +80,26 @@ class WebBrowser:
             print("ERROR: URL is blank or invalid")
 
         return result
-    
+
+    def _get_locator(self, locator_tag):
+        if locator_tag in self.by_dict:
+            locator = self.by_dict[locator_tag]
+        else:
+            print(f"Error {locator_tag} is not in by_dict:\n{self.by_dict}")
+        return locator
 #endregion
 
     
 #region Browser Control
     def initialize_driver(self):
-        print("Initializing Driver...")
+        print("\tInitializing Driver...")
         # Initialize the Options object
         options = Options()
         # self.options.headless = True
         options.add_argument("--window-size=1920,1080")
         options.add_argument(
             "--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:99.0) Gecko/20100101 Firefox/99.0")
-        options.binary_location = self.find_firefox_binary()
+        options.binary_location = self._find_firefox_binary()
 
         # Initialize the Service Object
         service = Service(executable_path=self.geckodriver_path)
@@ -105,7 +111,7 @@ class WebBrowser:
 
 
     def goto_url(self, url=""):
-        if self.url_is_valid(url):
+        if self._url_is_valid(url):
             try:
                 if self.driver == None:
                     self.initialize_driver()
@@ -138,8 +144,16 @@ class WebBrowser:
         element.send_keys(Keys.RETURN)
 
 
-    def click(self, element: WebElement):
-        element.click()
+    def click(self, element):
+        try:
+            # Scroll element into view
+            self.driver.execute_script("arguments[0].scrollIntoView(true);", element)
+            WebDriverWait(self.driver, 2).until(EC.element_to_be_clickable(element))
+            element.click()
+        except Exception as e:
+            print(f"\tNormal click failed: {e} Trying JavaScript click.")
+            # Fallback to JavaScript click
+            self.driver.execute_script("arguments[0].click();", element)
 
 
     def click_center_screen(self):
@@ -151,6 +165,7 @@ class WebBrowser:
         actions.move_by_offset(center_x, center_y).click().perform()
         actions.move_by_offset(-center_x, -center_y).perform()  # Move back to the origin
 
+
     def click_top_screen(self):
         window_size = self.driver.get_window_size()
         center_x = window_size['width'] / 2
@@ -159,6 +174,7 @@ class WebBrowser:
         actions = ActionChains(self.driver)
         actions.move_by_offset(center_x, top_y).click().perform()
         actions.move_by_offset(-center_x, -top_y).perform()
+
 
     def wait_for_element(self, time: float, by: str, tag: str):
         if by in self.by_dict:
@@ -179,30 +195,38 @@ class WebBrowser:
 
 
     def get_element(self, by: str, tag: str):
-        if by in self.by_dict:
-            locator = self.by_dict[by]
-        else:
-            print(f"Error {by} is not in by_dict:\n{self.by_dict}")
-
+        locator = self._get_locator(by)
         return self.wait.until(EC.presence_of_element_located((locator, tag)))
 
-    def get_elements(self, by: str, tag: str):
-        if by in self.by_dict:
-            locator = self.by_dict[by]
-        else:
-            print(f"Error {by} is not in by_dict:\n{self.by_dict}")
 
+    def get_elements(self, by: str, tag: str):
+        locator = self._get_locator(by)
+        self.wait.until(EC.presence_of_element_located((locator, tag)))
         return self.driver.find_elements(locator, tag)
+
+
+    def get_child_element(self, parent, by: str, tag: str):
+        locator = self._get_locator(by)
+        self.wait.until(EC.presence_of_element_located((locator, tag)))
+        child_element = parent.find_element(locator, tag)
+        return child_element
+
 
     def get_current_url(self):
         return self.driver.current_url
 
+
+    def get_element_text(self, by: str, tag: str):
+        locator = self._get_locator(by)
+        element =  self.wait.until(EC.presence_of_element_located((locator, tag)))
+        return element.text
     #endregion
+
 
 #region Cookie Management
     def has_cookies(self, url):
         result = False
-        domain = self.get_root_domain(url)
+        domain = self._get_root_domain(url)
 
         if os.path.exists(self.cookie_path):
             try:
@@ -229,7 +253,7 @@ class WebBrowser:
             return
 
         cookies = pickle.load(open(self.cookie_path, "rb"))
-        root_domain = self.get_root_domain(url)
+        root_domain = self._get_root_domain(url)
 
         self.driver.get(url)  # Navigate to the domain first
 

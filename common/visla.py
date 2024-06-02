@@ -1,7 +1,7 @@
 from common.browser import WebBrowser
 
 from time import sleep
-
+from pathlib import Path
 import yaml
 import os
 
@@ -65,6 +65,7 @@ class Visla:
             self.browser.goto_url(self.home_url)
 
         self.sign_in()
+        print("\tDone.")
 
 
     def create_video(self):
@@ -73,50 +74,94 @@ class Visla:
             return None
 
         # Click the new video button
-        print("Clicking 'Create a New Video...")
+        print("\nClicking 'Create a New Video...")
         create_video_btn = self.browser.get_element("id", "Create Video")
         self.browser.click(create_video_btn)
+        print("\tDone.")
 
         # Type in root prompt
-        print("Typing Root Prompt...")
+        print("\nTyping Root Prompt...")
         root_prompt = self.get_root_prompt()
         input_field = self.browser.get_element("xpath", "//textarea[@placeholder]")
         sleep(1)
         self.browser.type_keys(input_field, root_prompt)
+        print("\tDone")
 
-        # Use Only Free Stock
-        print("Clicking Generate Options Button...")
-        generate_options_btn = self.browser.get_element("class_name", "visla-button-only-icon")
+        # Deselect Premium Stock Assets (Free Stock Only)
+        print("\nDeselecting Premium Stock Assets...")
+        print("\tClicking Generate Options Button...")
+        generate_options_btn = self.browser.get_element("class_name", "NN5VjCOHotdC")
         self.browser.click(generate_options_btn)
-        print("Clicking Premium Stock CheckBoxes...")
+        print("\t\tClicked.")
 
-        #!TODO Checkboxes are not being generated properly!
+        print("\tClicking Premium Footage CheckBox...")
+        premium_footage_checkbox = self.browser.get_element("css_selector", "input[name='usePremiumStock']")
+        self.browser.click(premium_footage_checkbox)
+        print("\t\tDone.")
 
-        premium_stock_checkboxes = self.browser.get_elements("css_selector", "input[name='usePremiumStock']")
-        print(premium_stock_checkboxes)
-        for checkbox in premium_stock_checkboxes:
-            self.browser.click(checkbox)
-            print("CheckBox Clicked:", checkbox)
+        print("\tClicking Premium BGM Button...")
+        premium_bgm_checkbox = self.browser.get_element("css_selector", "input[name='usePremiumBgm']")
+        self.browser.click(premium_bgm_checkbox)
+        print("\t\tDone.")
+        print("\tDone.")
         self.browser.click_top_screen()
 
         # Generate Video
-        print("Clicking Generate Video Button...")
+        print("\nClicking Generate Video Button...")
         generate_btn = self.browser.get_element("class_name", "visla-button-primary")
         self.browser.click(generate_btn)
+        print("\tDone.")
 
-        # Wait for video to generate
-        print("Waiting for Video to generate...")
+        # Wait for Video to Generate
+        print("\nWaiting for Video to generate...")
         self.browser.wait_for_element(300, "tag_name", "canvas", )
         self.browser.click_top_screen()
+        print("\tDone")
 
-        # Export video
-        print("Exporting Video...")
-        export_button = self.browser.get_element("class_name", "ug-export-video",)
-        self.browser.click(export_button)
+        # Export Video
+        print("\nClicking Export Button...")
+        export_btn = self.browser.get_element("css_selector", "span.ug-export-video button.visla-button-primary")
+        self.browser.click(export_btn)
+        print("\tDone")
 
-        sleep(1000)
+        print("\nGrabbing Video Title...")
+        title = self.browser.get_element_text("css_selector", "div.qyEn6sB7NJp.m8YsdK9ZH.breadcrumb-title.breadcrumb-title-disabled")
+        print("\tTitle:", title)
+        print("\tDone.")
 
-        options_button = self.browser.get_element("xpath", "//*[name()='svg' and @xmlns='http://www.w3.org/2000/svg']")
+        #!TODO The Share Button's Class Name is shared by multiple elements. need a better trigger.
+        # Wait for Video to Render (using the share button's presence as a trigger)
+        print("\nWaiting for Video to Render...")
+        self.browser.wait_for_element(300, "class_name", "fg7D-VzQqe00")
+        print("\tDone.")
+
+        print("\nClicking Video Options Button...")
+        video_options_btn = self.browser.get_element("class_name", "fg7D-VzQqe00")
+        self.browser.click(video_options_btn)
+        print("\tDone.")
+
+        # print("\nFinding Download Button's Parent...")
+        # parent_div = self.browser.get_element("css_selector", "div.i580RRW7epzK")
+        # print("\tDone.")
+
+        print("\nClicking Download Button...")
+        download_btn = self.browser.get_element("xpath", "(//div[@class='ESbCbkij3jTe'])[4]")
+        self.browser.click(download_btn)
+        print("\tDone.")
+
+        print("\nFinding Video In Downloads Folder...")
+        downloads_dir = Path.home() / "Downloads"
+        print("\tDownloads Directory:", downloads_dir)
+        video_filename = f"{title}.mp4"
+        video_filepath = downloads_dir / video_filename
+        if not video_filepath.exists():
+            print("\tERROR: Cannot find downloaded video")
+            return None
+        print("\tVideo Downloaded To:", video_filepath)
+        print("\tDone.")
+
+
+
 
 
     def open_homepage(self):
