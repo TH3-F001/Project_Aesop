@@ -137,6 +137,7 @@ class Visla:
         share_btn_path = self.browser.wait_for_element(self.generation_wait_time, "class_name", "visla-player")
         print("\tDone.")
 
+        #!TODO Video Options Button needs to be identified. Currently not functional
         print("\nClicking Video Options Button...")
         video_options_btn = self.browser.get_element("xpath", "(//div[@class='w9acVRfpV0Ap'])[4]")
         self.browser.click(video_options_btn)
