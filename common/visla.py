@@ -11,6 +11,7 @@ class Visla:
         self.home_url = "https://app.visla.us/home"
         self.login_url = "https://app.visla.us/signin"
         self.browser = WebBrowser(10)
+        self.generation_wait_time = 500
         conf_file = "appdata/visla.yaml"
         self.root_prompt_file = "appdata/visla_root_prompt.txt"
 
@@ -83,7 +84,7 @@ class Visla:
         print("\nTyping Root Prompt...")
         root_prompt = self.get_root_prompt()
         input_field = self.browser.get_element("xpath", "//textarea[@placeholder]")
-        sleep(1)
+        sleep(0.2)
         self.browser.type_keys(input_field, root_prompt)
         print("\tDone")
 
@@ -114,7 +115,7 @@ class Visla:
 
         # Wait for Video to Generate
         print("\nWaiting for Video to generate...")
-        self.browser.wait_for_element(300, "tag_name", "canvas", )
+        self.browser.wait_for_element(self.generation_wait_time, "tag_name", "canvas", )
         self.browser.click_top_screen()
         print("\tDone")
 
@@ -125,18 +126,19 @@ class Visla:
         print("\tDone")
 
         print("\nGrabbing Video Title...")
-        title = self.browser.get_element_text("css_selector", "div.qyEn6sB7NJp.m8YsdK9ZH.breadcrumb-title.breadcrumb-title-disabled")
+        sleep(3)
+        title_element = self.browser.get_element("class_name", "b2vPNOl8zrMK")
+        title = title_element.get_attribute("title")
         print("\tTitle:", title)
         print("\tDone.")
 
-        #!TODO The Share Button's Class Name is shared by multiple elements. need a better trigger.
-        # Wait for Video to Render (using the share button's presence as a trigger)
+        # Wait for Video to Render (using the video element's presence as a trigger)
         print("\nWaiting for Video to Render...")
-        self.browser.wait_for_element(300, "class_name", "fg7D-VzQqe00")
+        share_btn_path = self.browser.wait_for_element(self.generation_wait_time, "class_name", "visla-player")
         print("\tDone.")
 
         print("\nClicking Video Options Button...")
-        video_options_btn = self.browser.get_element("class_name", "fg7D-VzQqe00")
+        video_options_btn = self.browser.get_element("xpath", "(//div[@class='w9acVRfpV0Ap'])[4]")
         self.browser.click(video_options_btn)
         print("\tDone.")
 
@@ -145,7 +147,7 @@ class Visla:
         # print("\tDone.")
 
         print("\nClicking Download Button...")
-        download_btn = self.browser.get_element("xpath", "(//div[@class='ESbCbkij3jTe'])[4]")
+        download_btn = self.browser.get_element("xpath", "(//div[@class='ESbCbkij3jTe'])[3]")
         self.browser.click(download_btn)
         print("\tDone.")
 

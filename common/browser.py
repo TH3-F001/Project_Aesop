@@ -2,6 +2,7 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
+from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.remote.webelement import WebElement
@@ -151,7 +152,6 @@ class WebBrowser:
             WebDriverWait(self.driver, 2).until(EC.element_to_be_clickable(element))
             element.click()
         except Exception as e:
-            print(f"\tNormal click failed: {e} Trying JavaScript click.")
             # Fallback to JavaScript click
             self.driver.execute_script("arguments[0].click();", element)
 
@@ -196,13 +196,24 @@ class WebBrowser:
 
     def get_element(self, by: str, tag: str):
         locator = self._get_locator(by)
-        return self.wait.until(EC.presence_of_element_located((locator, tag)))
-
+        result = None
+        try:
+            result = self.wait.until(EC.presence_of_element_located((locator, tag)))
+        except TimeoutException as e:
+            print(f"Timed Out: {e}")
+            return None
+        return result
 
     def get_elements(self, by: str, tag: str):
         locator = self._get_locator(by)
         self.wait.until(EC.presence_of_element_located((locator, tag)))
         return self.driver.find_elements(locator, tag)
+
+
+    def get_element_text(self, by: str, tag: str):
+        locator = self._get_locator(by)
+        element =  self.wait.until(EC.presence_of_element_located((locator, tag)))
+        return element.text
 
 
     def get_child_element(self, parent, by: str, tag: str):
@@ -216,10 +227,7 @@ class WebBrowser:
         return self.driver.current_url
 
 
-    def get_element_text(self, by: str, tag: str):
-        locator = self._get_locator(by)
-        element =  self.wait.until(EC.presence_of_element_located((locator, tag)))
-        return element.text
+
     #endregion
 
 
