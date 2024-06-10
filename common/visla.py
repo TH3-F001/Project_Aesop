@@ -4,6 +4,7 @@ from time import sleep
 from pathlib import Path
 import yaml
 import os
+import shutil
 
 
 class Visla:
@@ -125,6 +126,8 @@ class Visla:
         self.browser.click(export_btn)
         print("\tDone")
 
+
+    def download_video(self):
         print("\nGrabbing Video Title...")
         sleep(3)
         title_element = self.browser.get_element("class_name", "b2vPNOl8zrMK")
@@ -137,30 +140,36 @@ class Visla:
         share_btn_path = self.browser.wait_for_element(self.generation_wait_time, "class_name", "visla-player")
         print("\tDone.")
 
-        #!TODO Video Options Button needs to be identified. Currently not functional
+        # !TODO Video Options Button needs to be identified. Currently not functional
         print("\nClicking Video Options Button...")
-        video_options_btn = self.browser.get_element("xpath", "(//div[@class='w9acVRfpV0Ap'])[4]")
+        video_options_btn = self.browser.get_element("css_selector",
+                                                     ".w9acVRfpV0Ap > div:nth-child(5) > svg:nth-child(1)")
         self.browser.click(video_options_btn)
         print("\tDone.")
 
-        # print("\nFinding Download Button's Parent...")
-        # parent_div = self.browser.get_element("css_selector", "div.i580RRW7epzK")
-        # print("\tDone.")
-
-        print("\nClicking Download Button...")
-        download_btn = self.browser.get_element("xpath", "(//div[@class='ESbCbkij3jTe'])[3]")
+        print("\nDownloading Video...")
+        download_btn = self.browser.get_element("css_selector", "div.ESbCbki3j1Te:nth-child(4)")
         self.browser.click(download_btn)
+        sleep(5)
         print("\tDone.")
 
         print("\nFinding Video In Downloads Folder...")
         downloads_dir = Path.home() / "Downloads"
-        print("\tDownloads Directory:", downloads_dir)
         video_filename = f"{title}.mp4"
+        # video_filename = f"Jack and Jill's Hill Adventure - Short Animation for Kids.mp4"
         video_filepath = downloads_dir / video_filename
+
+        print(f"\tFilePath: {video_filepath}\n\tType: {type(video_filepath)}", video_filepath)
+
         if not video_filepath.exists():
             print("\tERROR: Cannot find downloaded video")
             return None
-        print("\tVideo Downloaded To:", video_filepath)
+
+        # Move the downloaded file from downloads to workbench
+        destination_filepath = f"workbench/{video_filename}"
+        shutil.move(str(video_filepath), str(destination_filepath))
+
+        print("\tVideo Downloaded To:", destination_filepath)
         print("\tDone.")
 
 

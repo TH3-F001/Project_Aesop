@@ -8,6 +8,7 @@ def main():
     visla = Visla()
     visla.log_on()
     visla.create_video()
+    visla.download_video()
 
 
 if __name__ == '__main__':
