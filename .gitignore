@@ -1,11 +1,12 @@
 *.yaml
 *.yml
 *.json
+*.pkl
 venv
 env
 *__pycache__
 *Notes*
 Notes
 appdata/Notes
-appdata/Notes
-appdata/Notes
+appdata/Restricted
+
