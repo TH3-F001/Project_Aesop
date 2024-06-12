@@ -13,7 +13,7 @@ class Visla:
         self.login_url = "https://app.visla.us/signin"
         self.browser = WebBrowser(10)
         self.generation_wait_time = 500
-        conf_file = "appdata/visla.yaml"
+        conf_file = "appdata/restricted/visla.yaml"
         self.root_prompt_file = "appdata/visla_root_prompt.txt"
 
         # Create visla config file if it doesnt already exist
