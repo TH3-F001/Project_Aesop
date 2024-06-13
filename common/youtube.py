@@ -5,6 +5,7 @@ import os
 import random
 import sys
 import time
+from moviepy.editor import VideoFileClip, CompositeVideoClip
 
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
@@ -32,24 +33,32 @@ class YoutubeArgs:
 
 
 class YoutubeUploader:
-    def __init__(self, args: YoutubeArgs ):
+    def __init__(self, args: YoutubeArgs, aspect=(9,16)):
         # Explicitly tell the underlying HTTP transport library not to retry, since
         # we are handling retry logic ourselves.
         httplib2.RETRIES = 1
         self.MAX_RETRIES = 10
         self.RETRIABLE_EXCEPTIONS = (httplib2.HttpLib2Error, IOError)
         self.RETRIABLE_STATUS_CODES = [500, 502, 503, 504]
-        self.CLIENT_SECRETS_FILE = "appdata/restricted/client_secret.json"
+        self.CLIENT_SECRETS_FILE = "appdata/restricted/google_secret.json"
         self.UPLOAD_SCOPE = "https://www.googleapis.com/auth/youtube.upload"
         self.API_SERVICE_NAME = "youtube"
         self.API_VERSION = "v3"
-        self.ARGS = args
-        # for categories list: https://developers.google.com/youtube/v3/docs/videoCategories/list
         self.VALID_PRIVACY_STATUSES = ("public", "private", "unlisted")
 
+        # Force Aspect ratio
+        filename = args.file.split(".")
+        modded_filepath = f"{filename[0]}_modded.{filename[1]}"
+        print(modded_filepath)
+        self.force_aspect_ratio(args.file, output_path=f"{modded_filepath}", aspect_ratio=aspect)
 
+        # Edit args before making an instance variable
+        args.file = modded_filepath
+        args.title += " #shorts"
+        args.description += " #shorts"
+        args.keywords += ", shorts"
+        self.ARGS = args
 
-        self
         with open("appdata/missing_client_secret_msg.txt", 'r') as file:
             self.MISSING_CLIENT_SECRETS_MESSAGE = file.read().replace("[FILE_PATH]", self.CLIENT_SECRETS_FILE)
 
@@ -59,7 +68,7 @@ class YoutubeUploader:
             scope=self.UPLOAD_SCOPE,
             message=self.MISSING_CLIENT_SECRETS_MESSAGE)
 
-        storage = Storage(f"{sys.argv[0]}-oauth2.json")
+        storage = Storage(f"appdata/restricted/google-oauth2.json")
         credentials = storage.get()
 
         if credentials is None or credentials.invalid:
@@ -130,6 +139,7 @@ class YoutubeUploader:
                 time.sleep(sleep_seconds)
 
     def run(self):
+
         if not os.path.exists(self.ARGS.file):
             print(f"Error: {self.ARGS.file} does not exist.")
 
@@ -139,5 +149,24 @@ class YoutubeUploader:
         except HttpError as e:
             print(f"An HTTP error {e.resp.status} occurred:\n{e.content}")
 
+    def force_aspect_ratio(self, filepath: str, output_path="", aspect_ratio=(9, 16)):
+        if output_path == "":
+            output_path = filepath
 
+        print(f"\nChanging {filepath.split('/')[-1]} aspect ratio to {aspect_ratio[0]}:{aspect_ratio[1]}...")
+        print(f"Outputting cropped video to file: {output_path}...")
+        clip = VideoFileClip(filepath)
+        original_width, original_height = clip.size
+        target_ratio = aspect_ratio[0] / aspect_ratio [1]
+
+        if (original_width / original_height) > target_ratio:
+            target_height = original_height
+            target_width = int(target_height * target_ratio)
+        else:
+            target_width = original_width
+            target_height = int(target_width / target_ratio)
+
+        cropped_clip = clip.crop(x_center=clip.w/2, y_center=clip.h/2, width=target_width, height=target_height)
+
+        cropped_clip.write_videofile(output_path, codec='libx264', fps=clip.fps, preset="slow")
 
