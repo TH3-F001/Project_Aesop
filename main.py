@@ -22,7 +22,7 @@ def main():
     # youtube.run()
 
     chat = ChatGPT()
-    chat.request_video_prompt()
+    # chat.request_video_prompt()
 
 if __name__ == '__main__':
     main()
