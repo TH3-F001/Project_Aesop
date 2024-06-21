@@ -1,0 +1,14 @@
+{
+    "Title": "Hubble's Last Gyro: The Telescope's Fight for Survival!",
+    "Description": "In just 60 seconds, find out how the Hubble Space Telescope is limping along on its last legs and what NASA's plans are to keep it going!",
+    "Tags": "Hubble, NASA, space telescope, astronomy, science news",
+    "Pinned_Comment": "Running on one gyro? Hubble's like that old car that just won't quit. \ud83d\ude80",
+    "Script": "Hey SpaceSecrets fans! Did you know the Hubble Space Telescope is now operating on its last legs? After years of capturing the universe's wonders, one of its three remaining gyros failed, and NASA decided to run Hubble on just one gyro to extend its life. This means Hubble can't move between targets as quickly, and a big part of the sky is now off-limits. But don't worry, NASA's confident Hubble can keep going into the mid-2030s, even with these limitations. And there's talk of a private mission to give Hubble a boost. Stay tuned to see how this space legend keeps pushing the boundaries of our universe!",
+    "Image_Prompts": {
+        "Hubble_in_Space.png": "The Hubble Space Telescope orbiting Earth, capturing the vastness of space.",
+        "Gyro_Failure.png": "An animated graphic showing Hubble's gyroscopes and highlighting the failed Gyro 3.",
+        "NASA_Engineers.png": "NASA engineers monitoring Hubble's status and working on solutions to extend its life.",
+        "Single_Gyro_Mode.png": "A diagram explaining how Hubble operates in single-gyro mode, with limitations highlighted.",
+        "Future_Mission_Concepts.png": "Concept art of a potential private mission to service or boost Hubble, featuring a spacecraft approaching the telescope."
+    }
+}
