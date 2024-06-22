@@ -6,7 +6,8 @@ from common.chatgpt import ChatGPT
 from common.visla import Visla
 from common.content_helper import Helper
 from time import sleep
-import yaml
+from typing import Dict
+import json
 
 
 ROOT_OUTPUT_DIR = "appdata/output"
@@ -21,13 +22,12 @@ def get_root_vidgen_instructions() -> str:
     return video_generator_prompt
 
 #region Channels
-def request_new_channel_input(name: str):
+def request_new_channel_input(name: str) -> dict:
     print(f"\nChannel: {name} is not registered. Please provide some additional information...")
     focus = input(f"Enter the channel: {name}'s focus: > ")
     mission = input(f"Enter the channel: {name}'s mission: > ")
 
     channel = {
-        "channel_name": name,
         "channel_focus": focus,
         "channel_mission": mission,
         "thread_id": None
@@ -39,67 +39,66 @@ def request_new_channel_input(name: str):
 def channel_name_is_registered(name: str) -> bool:
     print(f"\nChecking if Channel: {name} is registered...")
     channels = get_channels()
-    result = False
-    for channel in channels:
-        if channel["channel_name"] == name:
-            result = True
-            break
+    result = name in channels
     print(f"\tChannel: {name} Registered: {result}.")
     return result
 
 
-
-def get_channels():
-    print("\nLoading channels.yaml...")
-    channels_path = "appdata/prompts/gpt/channels.yaml"
+def get_channels() -> Dict[str, dict]:
+    print("\nLoading channels.json...")
+    channels_path = "appdata/prompts/gpt/channels.json"
     with open(channels_path, "r") as file:
-        config_dict = yaml.safe_load(file)
+        config_dict = json.load(file)
     print("\tChannels Loaded.")
-    return config_dict.get("channels", [])
+    return config_dict
 
 
-
-def get_channel(channel_name):
+def get_channel(channel_name: str) -> dict:
     channels = get_channels()
-    for channel in channels:
-        if channel["channel_name"] == channel_name:
-            return channel
-    return None
+    return channels.get(channel_name)
 
 
-def save_channels(channels_data):
-    channels_path = "appdata/prompts/gpt/channels.yaml"
+def save_channels(channels_data: Dict[str, dict]) -> None:
+    channels_path = "appdata/prompts/gpt/channels.json"
     with open(channels_path, "w") as file:
-        yaml.safe_dump(channels_data, file, default_flow_style=False, sort_keys=False, indent=2, width=80)
+        json.dump(channels_data, file, indent=4)
 
-def register_channel(new_channel):
-    print(f"\nRegistering New Channel: {new_channel['channel_name']}")
-    channels_data = {"channels": get_channels()}
-    channels_data["channels"].append(new_channel)
+
+def register_channel(new_channel_name: str, new_channel_data: dict) -> None:
+    print(f"\nRegistering New Channel: {new_channel_name}")
+    channels_data = get_channels()
+    channels_data[new_channel_name] = new_channel_data
     save_channels(channels_data)
-    print(f"\tChannel: {new_channel['channel_name']} Registered.")
+    print(f"\tChannel: {new_channel_name} Registered.")
 
-def update_channel(updated_channel):
-    print(f"\nUpdating Channel: {updated_channel['channel_name']}")
-    channels_data = {"channels": get_channels()}
-    for idx, channel in enumerate(channels_data["channels"]):
-        if channel["channel_name"] == updated_channel["channel_name"]:
-            channels_data["channels"][idx] = updated_channel
-            break
+
+
+def update_channel(channel_name: str, updated_channel_data: dict) -> None:
+    print(f"\nUpdating Channel: {channel_name}")
+    channels_data = get_channels()
+    channels_data[channel_name] = updated_channel_data
     save_channels(channels_data)
-    print(f"\tChannel: {updated_channel['channel_name']} Updated.")
+    print(f"\tChannel: {channel_name} Updated.")
 
 
-def check_and_register_channel(channel_name):
+def check_and_register_channel(channel_name: str) -> None:
     if not channel_name_is_registered(channel_name):
-        channel = request_new_channel_input(channel_name)
-        register_channel(channel)
+        new_channel_data = request_new_channel_input(channel_name)
+        register_channel(channel_name, new_channel_data)
+
+
+def prepare_output_folders():
+    channels = get_channels()
+    for channel_name, channel_data in channels.items():
+        dir_name = Helper.make_string_filesafe(channel_name)
+        Helper.create_directory_structure(f"{ROOT_OUTPUT_DIR}/{dir_name}")
+
 #endregion
 
 
 # Gets a video idea from the VidGen Assistant (making the assistant and registering channels as needed)
 
-def query_vidgen_assistant(chat: ChatGPT, channel_name, source_material):
+def query_vidgen_assistant(chat: ChatGPT, channel_name: str, source_material: str):
     print("\nQuerying VidGen Assistant...")
     check_and_register_channel(channel_name)
 
@@ -114,13 +113,13 @@ def query_vidgen_assistant(chat: ChatGPT, channel_name, source_material):
     if channel["thread_id"] is None:
         thread = chat.new_assistant_thread()
         channel["thread_id"] = thread.id
-        update_channel(channel)
+        update_channel(channel_name, channel)
     else:
         thread = chat.get_thread_by_id(channel["thread_id"])
 
     chat.generate_user_message(source_material, thread)
 
-    channel_instructions = yaml.dump(get_channel(channel_name), default_flow_style=False, sort_keys=False, indent=2, width=80)
+    channel_instructions = json.dumps(get_channel(channel_name), indent=2)
 
     result = chat.run_assistant_thread(thread, vidgen_prompt_assistant, channel_instructions)
     json_results = Helper.convert_string_to_json(result)
@@ -132,12 +131,8 @@ def query_vidgen_assistant(chat: ChatGPT, channel_name, source_material):
 
 
 
-
 def main():
-    # Ensure channels have proper output file structure
-    for channel in get_channels():
-        dir_name = Helper.make_string_filesafe(channel["channel_name"])
-        Helper.create_directory_structure(f"{ROOT_OUTPUT_DIR}/{dir_name}")
+    prepare_output_folders()
 
     chat = ChatGPT()
     source_material = Helper.get_web_page("https://thespacereview.com/article/4808/1")
@@ -145,7 +140,8 @@ def main():
     video_idea = query_vidgen_assistant(chat, "SpaceSecrets", source_material)
 
 
-
+if __name__ == '__main__':
+    main()
 
     # visla = Visla()
     # visla.log_on()
@@ -161,6 +157,3 @@ def main():
     # youtube = YoutubeUploader(youtube_args, aspect=(9,16))
     # youtube.run()
 
-
-if __name__ == '__main__':
-    main()

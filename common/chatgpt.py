@@ -76,9 +76,9 @@ class ChatGPT:
         print(f"\tThread: {thread} Created.")
         return thread
 
-    def get_thread_by_id(self, id):
+    def get_thread_by_id(self, thread_id):
         try:
-            thread = self.client.beta.threads.get(thread_id=id)
+            thread = self.client.beta.threads.retrieve(thread_id=thread_id)
             return thread
         except Exception as e:
             print(f"An error occurred while retrieving the thread: {e}")

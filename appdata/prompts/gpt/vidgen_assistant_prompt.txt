@@ -7,7 +7,7 @@ Please follow these instructions:
 2. Note the channel's name, focus, and mission listed beneath "[Additional Instructions]" (located in this prompt below the json example)
 2. Create a video idea tailored for the YouTube Shorts algorithm, ensuring that it is engaging and likely to attract viewers.
 3. Format the output in JSON using the following variables:
-   - Title: A compelling "click-bait" title crafted for the YouTube Shorts algorithm.
+   - Title: A very clickbaity title that the youtube algorithm will love.
    - Description: A brief description of the video, optimized for the YouTube Shorts algorithm.
    - Tags: A comma-separated list of relevant tags for the YouTube Shorts algorithm.
    - Pinned_Comment: A charming or funny blerb related to the video that give the viewers an impression of engagement
