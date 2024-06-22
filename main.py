@@ -125,19 +125,31 @@ def query_vidgen_assistant(chat: ChatGPT, channel_name: str, source_material: st
     json_results = Helper.convert_string_to_json(result)
     filesafe_filename = Helper.make_string_filesafe(json_results["Title"])
     filesafe_dirname = Helper.make_string_filesafe(channel_name)
-    file_path = f"{ROOT_OUTPUT_DIR}/{filesafe_dirname}/{filesafe_filename}"
+    video_dir_path = f"{ROOT_OUTPUT_DIR}/{filesafe_dirname}/{filesafe_filename}"
+    Helper.create_directory_structure(video_dir_path)
+    file_path = f"{video_dir_path}/{filesafe_filename}"
     Helper.save_json_to_file(json_results, file_path)
     return json_results
 
 
 
+
 def main():
     prepare_output_folders()
+    channel_name = "SpaceSecrets"
 
     chat = ChatGPT()
     source_material = Helper.get_web_page("https://thespacereview.com/article/4808/1")
     # print(source_material)
-    video_idea = query_vidgen_assistant(chat, "SpaceSecrets", source_material)
+    video_idea = query_vidgen_assistant(chat, channel_name, source_material)
+
+    for img_name, img_prompt in video_idea["Image_Prompts"].items():
+        safe_img_name = Helper.make_string_filesafe(img_name)
+        safe_channel_name = Helper.make_string_filesafe(channel_name)
+        safe_video_name = Helper.make_string_filesafe(video_idea["Title"])
+        img_path = f"{ROOT_OUTPUT_DIR}/{safe_channel_name}/{safe_video_name}/{safe_img_name}"
+        print(f"Generating {img_name}...")
+        chat.generate_image(img_prompt, img_path)
 
 
 if __name__ == '__main__':

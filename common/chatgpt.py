@@ -168,8 +168,8 @@ class ChatGPT:
 
 
 #region DALL-E API
-    def generate_image(self, prompt: str, output_path, resolution="1024x1792", num_images=1):
-        print("\nGenerating Image...")
+    def generate_image(self, prompt: str, output_path: str, resolution="1024x1792", num_images=1):
+        print("\nGenerating DALL-E Image...")
         if num_images > 10:
             num_images = 10
 
