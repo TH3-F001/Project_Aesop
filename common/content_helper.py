@@ -5,7 +5,7 @@ from io import BytesIO
 from bs4 import BeautifulSoup
 import os
 import json
-
+from pathlib import Path
 
 class Helper():
     @staticmethod
@@ -74,3 +74,9 @@ class Helper():
             print(f"JSON data successfully saved to {file_path}")
         except Exception as e:
             print(f"An error occurred while saving JSON to file: {e}")
+
+    @staticmethod
+    def get_parent_directory(filepath: str) -> str:
+        path_obj = Path(filepath)
+        parent_directory = path_obj.parent
+        return str(parent_directory)

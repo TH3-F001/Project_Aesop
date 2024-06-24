@@ -1,4 +1,5 @@
 from common.content_helper import Helper
+from common.exceptions import RateLimitExceededException
 from openai import OpenAI, Model, OpenAIError
 from time import sleep
 from typing import List
@@ -84,47 +85,46 @@ class ChatGPT:
             print(f"An error occurred while retrieving the thread: {e}")
             return None
 
-    def run_assistant_thread(self, thread, assistant, additional_instructions):
+
+    def run_assistant_thread(self, thread, assistant_name, additional_instructions):
         print(f"\nRunning Thread: {thread.id}...")
-        result = None
-        try:
-            # Start the run
-            run = self.client.beta.threads.runs.create_and_poll(
-                thread_id=thread.id,
-                assistant_id=assistant.id,
-                additional_instructions=additional_instructions
-            )
 
-            # Poll until the run is completed
-            while run.status != "completed":
-                print(f"\tRun status: {run.status}")
-                if run.status == "failed":
-                    raise RuntimeError("\tERROR: Run failed.")
-                sleep(1)  # Adding a sleep to avoid busy-waiting
+        # Get the assistant details directly, letting errors raise if it fails
+        assistant = self.get_assistant(assistant_name)
 
-            # Fetch the list of messages in the thread
-            messages = self.client.beta.threads.messages.list(thread_id=thread.id)
+        # Start the thread run and let any errors during creation or polling propagate
+        run = self.client.beta.threads.runs.create_and_poll(
+            thread_id=thread.id,
+            assistant_id=assistant.id,
+            additional_instructions=additional_instructions
+        )
 
-            # Retrieve the last assistant response
-            for message in reversed(messages.data):
-                if message.role == "assistant":
-                    for content_block in message.content:
-                        if content_block.type == 'text':
-                            result = content_block.text.value
-                            print(content_block.text.value)
-                    break
+        # Poll until the run is completed, let it crash on failure
+        while run.status != "completed":
+            print(f"\tRun status: {run.status}")
+            if run.status == "failed":
+                errcode = run.last_error.code
+                errmsg = run.last_error.message
+                if errcode == "rate_limit_exceeded":
+                    raise RateLimitExceededException("Request too Large")
 
-        except OpenAIError as e:
-            print(f"\tERROR: OpenAI error occurred: {e}")
-        except Exception as e:
-            print(f"\tERROR: An unexpected error occurred: {e}")
+                raise RuntimeError(f"ERROR: Run failed with error code {errcode}\n{errmsg}.")
+            sleep(1)
 
-        return result
+        # Fetch the list of messages in the thread
+        messages = self.client.beta.threads.messages.list(thread_id=thread.id)
 
-    def query_assistant(self, assistant_name: str):
-        print(f"\nQuerying Assistant: {assistant_name}...")
+        # Retrieve the last assistant response
+        for message in reversed(messages.data):
+            if message.role == "assistant":
+                for content_block in message.content:
+                    if content_block.type == 'text':
+                        result = content_block.text.value
+                        print(content_block.text.value)
+                        return result
 
-        # Get the assistant if already created
+        raise RuntimeError("No assistant response found in the thread.")
+
 
     def generate_user_message(self, user_prompt, thread):
         print("\tGenerating User Message...")
@@ -136,33 +136,6 @@ class ChatGPT:
 
         print("\t\tUser Message Generated.")
         return message
-
-    def generate_video_prompt(self, user_prompt: str):
-        print("\tGenerating Video Prompt...")
-        # Get the Vidgen Assistant or Create it if needed
-        if self.assistant_exists("VidGen Assistant"):
-            self.vidgen_prompt_assistant = self.get_assistant("VidGen Assistant")
-        else:
-            root_vidgen_instructions = self.get_root_vidgen_instructions()
-            self.vidgen_prompt_assistant = self.create_new_assistant("VidGen Assistant", root_vidgen_instructions)
-
-        thread = self.new_assistant_thread()
-
-        # Create the first user message
-        print("\tGenerating User Message...")
-        message = self.client.beta.threads.messages.create(
-            thread_id=thread.id,
-            role="user",
-            content=user_prompt
-        )
-
-        # Grab Channel data for thread instructions
-        print("\tGrabbing Channel Data...")
-        with open("appdata/prompts/gpt/channel_prompts/space_secrets.yaml", "r") as file:
-            thread_instructions = file.read()
-
-        # Run a query
-        self.run_assistant_thread(thread, thread_instructions)
 
 #endregion
 
@@ -193,6 +166,34 @@ class ChatGPT:
     #         self.generate_image()
 
 #endregion
+
+
+#region Text-to-Voice and Voice-to-Text
+    def get_voice_from_text(self, msg: str, output_path: str, high_quality=False, voice="alloy"):
+        print("\nConverting Message Into Audio...")
+        model = "tts-1"
+        if high_quality:
+            model += "-hd"
+
+        valid_voices = {"alloy", "echo", "fable", "onyx", "nova", "shimmer"}
+        if voice not in valid_voices:
+            raise ValueError(f"ERROR! Voice Model: {voice} is invalid.")
+
+        response = self.client.audio.speech.create(
+            model=model,
+            voice=voice,
+            input=msg
+        )
+
+        parent_dir = Helper.get_parent_directory(output_path)
+        Helper.create_directory_structure(parent_dir)
+
+        response.stream_to_file(output_path)
+        print(f"\tAudio File Downloaded to {output_path}.")
+
+
+    def get_text_from_voice(self):
+        pass
 
 
 #region Completions API
