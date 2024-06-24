@@ -7,5 +7,7 @@ google-auth-httplib2
 google-api-python-client
 oauth2client
 openai
-moviepy
 bs4
+opencv-python-headless
+numpy
+mutagen

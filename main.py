@@ -7,6 +7,7 @@ from common.exceptions import RateLimitExceededException
 from common.chatgpt import ChatGPT
 from common.visla import Visla
 from common.content_helper import Helper
+from common.content_editor import Editor
 from time import sleep
 from typing import Dict
 import json
@@ -207,7 +208,7 @@ def request_video_images(chat:ChatGPT, channel_name: str, video_name: str):
     video_json = get_video_json(channel_name, video_name)
     for img_name, img_prompt in video_json["Image_Prompts"].items():
         video_dir_path = get_video_directory(channel_name, video_json["Title"])
-        img_path = f"{video_dir_path}/{Helper.make_string_filesafe(img_name)}"
+        img_path = f"{video_dir_path}/{Helper.make_string_filesafe(img_name)}.png"
         print(f"Generating {img_name}...")
         chat.generate_image(img_prompt, img_path)
     print(f"\t{video_name} Image Generation Complete!")
@@ -215,16 +216,47 @@ def request_video_images(chat:ChatGPT, channel_name: str, video_name: str):
 
 def request_video_voiceover(chat:ChatGPT, channel_name: str, video_name: str):
     print("\nGenerating ChatGPT Voiceover...")
+    script = get_video_property("Script", channel_name, video_name)
+    vid_dir = get_video_directory(channel_name, video_name)
+
+    for scene_name, scene_script in script.items():
+        filesafe_scene_name = Helper.make_string_filesafe(scene_name)
+        out_path = f"{vid_dir}/{filesafe_scene_name}.mp3"
+        chat.get_voice_from_text(scene_script, out_path)
+
+def convert_video_images_to_clips(channel_name: str, video_name: str, style="zoom_in"):
+    video_dir = get_video_directory(channel_name, video_name)
+    filepaths = {}
+
+    print(video_dir)
+    for filename in os.listdir(video_dir):
+        if filename.endswith(".png"):
+            base_filename = filename.split(".png")[0]
+            base_filepath = f"{video_dir}/{filename}"
+            new_filepath = f"{video_dir}/{base_filename}_clip.mp4"
+            filepaths[base_filepath] = new_filepath
+
+    for original_path, new_path in filepaths.items():
+        print(f"\n\nImage_Path: {original_path}\nOutput_Path: {new_path}")
+        audio_path = original_path.replace(".png", ".mp3")
+        duration = Editor.get_mp3_duration(audio_path)
+        Editor.create_video_from_image(original_path, new_path, duration)
+
 
 
 
 def main():
     channel_name = "SpaceSecrets"
-    chat = ChatGPT()
-    source_material = Helper.get_web_page("https://thespacereview.com/article/4808/1")
-    video_idea = request_video_idea(chat, channel_name, source_material)
 
-    # request_video_images(chat, channel_name, video_idea.get("Title"))
+    chat = ChatGPT()
+    # source_material = Helper.get_web_page("https://thespacereview.com/article/4808/1")
+    # video_idea = request_video_idea(chat, channel_name, source_material)
+    # video_title = video_idea.get("Title")
+    #
+    # request_video_images(chat, channel_name, video_title)
+    # request_video_voiceover(chat, channel_name, video_title)
+    convert_video_images_to_clips(channel_name, "Hubble's Final Frontier: Surviving on a Single Gyro!")
+
 
 
 
