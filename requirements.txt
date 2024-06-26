@@ -11,3 +11,5 @@ bs4
 opencv-python-headless
 numpy
 mutagen
+ffmpeg-python
+pydub

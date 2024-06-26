@@ -6,17 +6,19 @@ from typing import List
 import os
 import yaml
 
+from pydub import AudioSegment
+from pydub.silence import split_on_silence
 
 
 class ChatGPT:
 
     def __init__(self, output_folder=""):
         # Load Config
-        config_path = "appdata/restricted/gpt.yaml"
+        config_path = "appdata/restricted/gpt_auth.json"
         with open(config_path, "r") as file:
             config = yaml.safe_load(file)
 
-        # Assign API key from gpt.yaml as an environment variable
+        # Assign API key from gpt_auth.json as an environment variable
         self.api_key = config["creds"]["api_key"]
         os.environ["OPENAI_API_KEY"] = self.api_key
 
@@ -169,7 +171,7 @@ class ChatGPT:
 
 
 #region Text-to-Voice and Voice-to-Text
-    def get_voice_from_text(self, msg: str, output_path: str, high_quality=False, voice="alloy"):
+    def get_voice_from_text(self, msg: str, output_path: str, high_quality=False, voice="alloy", silent_time=500):
         print("\nConverting Message Into Audio...")
         model = "tts-1"
         if high_quality:
@@ -188,9 +190,26 @@ class ChatGPT:
         parent_dir = Helper.get_parent_directory(output_path)
         Helper.create_directory_structure(parent_dir)
 
-        response.stream_to_file(output_path)
-        print(f"\tAudio File Downloaded to {output_path}.")
+        temp_output_path = output_path + "_temp"
+        response.stream_to_file(temp_output_path)
+        print(f"\tTemporary Audio File Downloaded to {temp_output_path}.")
 
+        # Load the temporary audio file
+        audio = AudioSegment.from_file(temp_output_path)
+
+        # Create silence segment of 0.25 seconds
+        silence = AudioSegment.silent(duration=silent_time)  # Duration is in milliseconds
+
+        # Add silence to the end of the audio
+        final_audio = audio + silence
+
+        # Export the final audio to the original output path
+        final_audio.export(output_path, format="mp3")
+        print(f"\tAudio File with Silence Added Downloaded to {output_path}.")
+
+        # Optionally delete the temporary file
+        import os
+        os.remove(temp_output_path)
 
     def get_text_from_voice(self):
         pass
