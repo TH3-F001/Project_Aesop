@@ -5,7 +5,6 @@ from common.browser import WebBrowser
 from common.youtube import YoutubeUploader, YoutubeArgs
 from common.exceptions import RateLimitExceededException
 from common.chatgpt import ChatGPT
-from common.visla import Visla
 from common.content_helper import Helper
 from common.content_editor import Editor
 from time import sleep

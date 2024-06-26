@@ -4,7 +4,7 @@ from openai import OpenAI, Model, OpenAIError
 from time import sleep
 from typing import List
 import os
-import yaml
+import json
 
 from pydub import AudioSegment
 from pydub.silence import split_on_silence
