@@ -18,7 +18,7 @@ ROOT_OUTPUT_DIR = "appdata/output"
 
 def get_root_vidgen_instructions() -> str:
     print("\n Getting Root VidGen Instructions...")
-    vidgen_prompt_path = "appdata/prompts/gpt/vidgen_assistant_prompt.txt"
+    vidgen_prompt_path = "appdata/vidgen_assistant_prompt.txt"
     with open(vidgen_prompt_path, "r") as file:
         video_generator_prompt = file.read()
 
@@ -48,7 +48,7 @@ def channel_name_is_registered(name: str) -> bool:
 
 
 def save_channels(channels_data: Dict[str, dict]) -> None:
-    channels_path = "appdata/prompts/gpt/channels.json"
+    channels_path = "appdata/channels.json"
     with open(channels_path, "w") as file:
         json.dump(channels_data, file, indent=4)
 
@@ -108,7 +108,7 @@ def get_video_directory(channel_name: str, video_name: str) -> str:
 
 def get_channels() -> Dict[str, dict]:
     print("\nLoading channels.json...")
-    channels_path = "appdata/prompts/gpt/channels.json"
+    channels_path = "appdata/channels.json"
     if not os.path.exists(channels_path):
         raise FileNotFoundError(f"Channel Config File couldnt be found: {channels_path}")
     with open(channels_path, "r") as file:
@@ -159,9 +159,9 @@ def ensure_vidgen_assistant_exists(chat: ChatGPT, channel_name: str):
 
 
 def setup_thread(chat: ChatGPT, channel_name: str, source_material: str):
-    channel = get_channel(channel_name)
-    thread_id = get_channel_thread_id(chat, channel_name)
-    thread = chat.get_thread_by_id(thread_id)
+    # channel = get_channel(channel_name)
+    # thread_id = get_channel_thread_id(chat, channel_name)
+    thread = chat.new_assistant_thread()
     chat.generate_user_message(source_material, thread)
     return thread
 
@@ -180,7 +180,60 @@ def run_thread_with_retry(chat: ChatGPT, thread, channel_name, source_material):
 def run_assistant_thread(chat: ChatGPT, thread, channel_name):
     channel = get_channel(channel_name)
     channel_instructions = json.dumps(channel, indent=2)
+    print("CHANNEL INSTRUCTIONS:", channel_instructions)
     return chat.run_assistant_thread(thread, "VidGen Assistant", channel_instructions)
+
+
+def get_video_files(channel_name: str, video_name: str):
+    video_dir = get_video_directory(channel_name, video_name)
+    audio_clip_files = [os.path.join(video_dir, file) for file in os.listdir(video_dir) if '_audio_clip.mp4' in file]
+
+    # Identify where video files are stored, and err out if not found
+    if audio_clip_files:
+        video_files = audio_clip_files
+    else:
+        audio_clips_dir = os.path.join(video_dir, 'audio_clips')
+        if not os.path.exists(audio_clips_dir):
+            raise FileNotFoundError(f"No 'audio_clips' directory found in {video_dir}")
+        video_files = [os.path.join(audio_clips_dir, file) for file in os.listdir(audio_clips_dir) if file.endswith('.mp4')]
+
+    # Ensure correct video order using script dict
+    script_dict = get_video_property("Script", channel_name, video_name)
+    ordered_video_files = []
+
+    # Order video files based on the script dictionary
+    for key in script_dict.keys():
+        clip_title = Helper.make_string_filesafe(key)
+        for filepath in video_files:
+            if clip_title in os.path.basename(filepath):
+                ordered_video_files.append(filepath)
+                break
+
+    return ordered_video_files
+
+def organize_output_folder(channel_name: str, video_name: str):
+    video_dir = get_video_directory(channel_name, video_name)
+    image_dir = f"{video_dir}/images"
+    audio_dir = f"{video_dir}/audio"
+    sclips_dir = f"{video_dir}/silent_clips"
+    aclips_dir = f"{video_dir}/audio_clips"
+    Helper.create_directory_structure(image_dir)
+    Helper.create_directory_structure(audio_dir)
+    Helper.create_directory_structure(sclips_dir)
+    Helper.create_directory_structure(aclips_dir)
+
+    for filename in os.listdir(video_dir):
+        file_path = f"{video_dir}/{filename}"
+        if filename.endswith(".png"):
+            Helper.move_file(file_path, image_dir)
+        elif filename.endswith(".mp3"):
+            Helper.move_file(file_path, audio_dir)
+        elif "base_clip" in filename:
+            Helper.move_file(file_path, sclips_dir)
+        elif "audio_clip" in filename:
+            Helper.move_file(file_path, aclips_dir)
+        elif "_clip.mp4" in filename:
+            os.remove(file_path)
 #endregion
 
 
@@ -224,38 +277,59 @@ def request_video_voiceover(chat:ChatGPT, channel_name: str, video_name: str):
         out_path = f"{vid_dir}/{filesafe_scene_name}.mp3"
         chat.get_voice_from_text(scene_script, out_path)
 
-def convert_video_images_to_clips(channel_name: str, video_name: str, style="zoom_in"):
+
+def generate_video_from_assets(channel_name: str, video_name: str, style="zoom_in"):
     video_dir = get_video_directory(channel_name, video_name)
     filepaths = {}
 
-    print(video_dir)
     for filename in os.listdir(video_dir):
         if filename.endswith(".png"):
             base_filename = filename.split(".png")[0]
             base_filepath = f"{video_dir}/{filename}"
-            new_filepath = f"{video_dir}/{base_filename}_clip.mp4"
+            new_filepath = f"{video_dir}/{base_filename}_base_clip.mp4"
             filepaths[base_filepath] = new_filepath
 
     for original_path, new_path in filepaths.items():
         print(f"\n\nImage_Path: {original_path}\nOutput_Path: {new_path}")
         audio_path = original_path.replace(".png", ".mp3")
         duration = Editor.get_mp3_duration(audio_path)
-        Editor.create_video_from_image(original_path, new_path, duration)
+        Editor.create_video_from_image(original_path, new_path, duration, video_style=style)
+        audio_out_path = new_path.replace("base_clip", "audio_clip")
+        Editor.combine_audio_video(new_path, audio_path, audio_out_path)
+
+
+
+
+
+def compile_video(channel_name, video_name):
+    output_file = f"{get_video_directory(channel_name, video_name)}/{Helper.make_string_filesafe(video_name)}.mp4"
+    video_files = get_video_files(channel_name, video_name)
+    print(f"outputting {video_name} to {output_file}")
+    Editor.concatenate_videos(video_files, output_file)
 
 
 
 
 def main():
-    channel_name = "SpaceSecrets"
+    channel_name = "Celebrities Sensationalized"
 
     chat = ChatGPT()
-    # source_material = Helper.get_web_page("https://thespacereview.com/article/4808/1")
-    # video_idea = request_video_idea(chat, channel_name, source_material)
-    # video_title = video_idea.get("Title")
-    #
-    # request_video_images(chat, channel_name, video_title)
-    # request_video_voiceover(chat, channel_name, video_title)
-    convert_video_images_to_clips(channel_name, "Hubble's Final Frontier: Surviving on a Single Gyro!")
+    source_material = Helper.get_web_page("https://embed.etonline.com/billy-ray-cyrus-accuses-firerose-of-physical-emotional-and-verbal-abuse-denies-her-abuse")
+    print(source_material)
+
+    cont = input("continue? y/n")
+    if cont != "y":
+        exit(1)
+
+    video_idea = request_video_idea(chat, channel_name, source_material)
+    video_title = video_idea.get("Title")
+
+    request_video_images(chat, channel_name, video_title)
+    request_video_voiceover(chat, channel_name, video_title)
+    generate_video_from_assets(channel_name, video_title)
+    organize_output_folder(channel_name, video_title)
+    compile_video(channel_name, video_title)
+
 
 
 

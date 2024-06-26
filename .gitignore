@@ -1,12 +1,8 @@
-*.yaml
-*.yml
-*.json
 *.pkl
 venv
 env
 *__pycache__
-*Notes*
-Notes
-appdata/restricted/Notes
-appdata/Restricted
-appdata/output
+appdata/restricted/
+appdata/output/
+/appdata/channels.json
+/appdata/vidgen_assistant_prompt.txt

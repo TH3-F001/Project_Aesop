@@ -1,4 +1,5 @@
 import cv2
+import ffmpeg
 from mutagen.mp3 import MP3
 
 import numpy as np
@@ -68,4 +69,26 @@ class Editor:
     def get_mp3_duration(file_path):
         audio = MP3(file_path)
         return audio.info.length
+
+    @staticmethod
+    def combine_audio_video(video_path, audio_path, output_path):
+        input_video = ffmpeg.input(video_path)
+        input_audio = ffmpeg.input(audio_path)
+
+        ffmpeg.concat(input_video, input_audio, v=1, a=1).output(output_path, y=None).run()
+
+
+    @staticmethod
+    def concatenate_videos(video_paths, output_path):
+        inputs = [ffmpeg.input(video) for video in video_paths]
+        video_streams = [input.video for input in inputs]
+        audio_streams = [input.audio for input in inputs]
+
+        # Concatenate video and audio separately
+        concatenated_video = ffmpeg.concat(*video_streams, v=1, a=0)
+        concatenated_audio = ffmpeg.concat(*audio_streams, v=0, a=1)
+
+        # Combine the concatenated video and audio streams
+        ffmpeg.output(concatenated_video, concatenated_audio, output_path).run()
+
 #endregion

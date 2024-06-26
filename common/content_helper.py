@@ -6,6 +6,7 @@ from bs4 import BeautifulSoup
 import os
 import json
 from pathlib import Path
+import shutil
 
 class Helper():
     @staticmethod
@@ -62,6 +63,11 @@ class Helper():
         os.makedirs(target_dir_path, exist_ok=True)
 
     @staticmethod
+    def move_file(source_file: str, destination_folder: str):
+        Helper.create_directory_structure(destination_folder)
+        shutil.move(source_file, destination_folder)
+
+    @staticmethod
     def convert_string_to_json(json_string):
         clean_json_string = json_string.replace("```json", '').replace("```", '')
         return json.loads(clean_json_string)
@@ -80,3 +86,4 @@ class Helper():
         path_obj = Path(filepath)
         parent_directory = path_obj.parent
         return str(parent_directory)
+
