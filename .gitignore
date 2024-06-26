@@ -6,3 +6,4 @@ appdata/restricted/
 appdata/output/
 /appdata/channels.json
 /appdata/vidgen_assistant_prompt.txt
+.idea
