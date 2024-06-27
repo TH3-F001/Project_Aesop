@@ -1,3 +1,5 @@
+from typing import Dict
+
 import requests
 import re
 from PIL import Image
@@ -73,13 +75,35 @@ class Helper():
         return json.loads(clean_json_string)
 
     @staticmethod
+    def load_json(filepath: str) -> Dict:
+        try:
+            with open(filepath, 'r') as file:
+                return json.load(file)
+        except FileNotFoundError:
+            raise FileNotFoundError(f"Error: The file '{filepath}' does not exist.")
+        except json.JSONDecodeError:
+            raise json.JSONDecodeError(f"Error: The file '{filepath}' contains invalid JSON.")
+        except Exception as e:
+            raise Exception(f"An unexpected error occurred: {e}")
+
+    @staticmethod
     def save_json_to_file(json_data, file_path):
         try:
+            # If json_data is a string, parse it into a dictionary
+            if isinstance(json_data, str):
+                json_data = json.loads(json_data)
+
+            # Save the dictionary as a JSON file
             with open(file_path, 'w') as file:
                 json.dump(json_data, file, indent=4)
+
             print(f"JSON data successfully saved to {file_path}")
+        except json.JSONDecodeError as e:
+            print(f"Error parsing JSON string: {e}")
+        except IOError as e:
+            print(f"Error writing JSON to file: {e}")
         except Exception as e:
-            print(f"An error occurred while saving JSON to file: {e}")
+            print(f"An unexpected error occurred: {e}")
 
     @staticmethod
     def get_parent_directory(filepath: str) -> str:

@@ -12,18 +12,15 @@ from pydub.silence import split_on_silence
 
 class ChatGPT:
 
-    def __init__(self, output_folder=""):
+    def __init__(self, cred_path:str):
         # Load Config
-        config_path = "appdata/restricted/gpt_auth.json"
-        with open(config_path, "r") as file:
-            config = yaml.safe_load(file)
+
+        with open(cred_path, "r") as file:
+            creds = Helper.load_json(cred_path)
 
         # Assign API key from gpt_auth.json as an environment variable
-        self.api_key = config["creds"]["api_key"]
+        self.api_key = creds["api_key"]
         os.environ["OPENAI_API_KEY"] = self.api_key
-
-        # We dump all output files here in a folder marked with the channel name/video title
-        self.output_dir = config["output_folder"]
 
         # Set the model to be used for text prompts
         self.text_model = "gpt-4-turbo-preview"

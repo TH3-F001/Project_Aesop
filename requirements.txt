@@ -13,3 +13,4 @@ numpy
 mutagen
 ffmpeg-python
 pydub
+elevenlabs

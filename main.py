@@ -3,6 +3,7 @@ import os.path
 
 from common.browser import WebBrowser
 from common.youtube import YoutubeUploader, YoutubeArgs
+from common.elevenlabs import Dictator
 from common.exceptions import RateLimitExceededException
 from common.chatgpt import ChatGPT
 from common.content_helper import Helper
@@ -13,7 +14,7 @@ import json
 
 
 ROOT_OUTPUT_DIR = "appdata/output"
-
+CREDENTIAL_DIR = "appdata/restricted"
 
 def get_root_vidgen_instructions() -> str:
     print("\n Getting Root VidGen Instructions...")
@@ -310,25 +311,32 @@ def compile_video(channel_name, video_name):
 
 
 def main():
-    channel_name = "Celebrities Sensationalized"
-
-    chat = ChatGPT()
-    source_material = Helper.get_web_page("https://embed.etonline.com/billy-ray-cyrus-accuses-firerose-of-physical-emotional-and-verbal-abuse-denies-her-abuse")
-    print(source_material)
-
-    cont = input("continue? y/n")
-    if cont != "y":
-        exit(1)
-
-    video_idea = request_video_idea(chat, channel_name, source_material)
-    video_title = video_idea.get("Title")
-
-    request_video_images(chat, channel_name, video_title)
-    request_video_voiceover(chat, channel_name, video_title)
-    generate_video_from_assets(channel_name, video_title)
-    organize_output_folder(channel_name, video_title)
-    compile_video(channel_name, video_title)
-
+    # channel_name = "SpaceSecrets"
+    #
+    # chat = ChatGPT(f"{CREDENTIAL_DIR}/gpt_auth.json")
+    # source_material = Helper.get_web_page("https://www.space.com/nasa-lasers-pet-photos-into-space")
+    # print(source_material)
+    #
+    # cont = input("continue? y/n")
+    # if cont != "y":
+    #     exit(1)
+    #
+    # video_idea = request_video_idea(chat, channel_name, source_material)
+    # video_title = video_idea.get("Title")
+    #
+    # request_video_images(chat, channel_name, video_title)
+    # request_video_voiceover(chat, channel_name, video_title)
+    # generate_video_from_assets(channel_name, video_title)
+    # organize_output_folder(channel_name, video_title)
+    # compile_video(channel_name, video_title)
+    elevenlabs_credpath = "appdata/restricted/elevenlabs_auth.json"
+    elevenlabs_voices_path = "appdata/elevenlabs_voices.json"
+    dictator = Dictator(elevenlabs_credpath, elevenlabs_voices_path)
+    voice = "Nia Davis- Black Female"
+    out_path = "appdata/output/Test/eleven.mp3"
+    text = "The Fitness Gram Pacer Test is a multistage aerobic capacity test that progressively gets more difficult as it continues. The twenty meter pacer test will begin in thirty seconds. Line up at the start. The running speed starts slowly but gets faster each minute after you hear this signal bo-dee-boop"
+    dictator.convert_text_to_speech(text, out_path, voice)
+    # print("")
 
 
 
