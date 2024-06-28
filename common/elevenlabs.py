@@ -39,23 +39,65 @@ class Dictator:
                 return voice['voice_id']
         raise ValueError(f"Voice: {voice_name} ID could not be found")
 
-    def convert_text_to_speech(self, text, output_path, voice_name, model="eleven_turbo_v2", stability=0.0, similarity=1.0, style=0.0):
+    def text_to_speech(self, text: str, output_path: str, voice_name: str, model="eleven_turbo_v2", stability=0.0, similarity=1.0, style=0.0):
         voice_id = self.get_voice_id(voice_name)
-        voice_settings = VoiceSettings(
-            stability=stability,
-            similarity_boost=similarity,
-            style=style,
-            use_speaker_boost=True)
         response = self.client.text_to_speech.convert(
             voice_id=voice_id,
             optimize_streaming_latency=0,
             output_format="mp3_44100_64",
             text=text,
             model_id=model,
-            voice_settings=voice_settings
+            voice_settings=VoiceSettings(
+                stability=stability,
+                similarity_boost=similarity,
+                style=style,
+                use_speaker_boost=True
+            )
+        )
+        with open(output_path, "wb") as file:
+            for chunk in response:
+                if chunk:
+                    file.write(chunk)
+
+    def speech_to_speech(self, source_audio_path: str, output_path: str, voice_name: str, model="eleven_english_sts_v2", stability=0.0,
+                         similarity=1.0, style=0.0):
+        voice_id = self.get_voice_id(voice_name)
+        # Create a dictionary for voice settings
+        voice_settings_dict = {
+            "stability": stability,
+            "similarity_boost": similarity,
+            "style": style,
+            "use_speaker_boost": True
+        }
+        # Convert the dictionary to a JSON string
+        voice_settings_json = json.dumps(voice_settings_dict)
+
+        response = self.client.speech_to_speech.convert(
+            voice_id=voice_id,
+            optimize_streaming_latency=0,
+            output_format="mp3_44100_64",
+            audio=open(source_audio_path, 'rb'),
+            model_id=model,
+            voice_settings=voice_settings_json  # Pass the JSON string
         )
 
         with open(output_path, "wb") as file:
             for chunk in response:
                 if chunk:
                     file.write(chunk)
+
+    def text_to_sound_fx(self, text: str, output_path: str, duration_seconds: float = None, prompt_influence: float = 0.3):
+        response = self.client.text_to_sound_effects.convert(
+            text=text,
+            duration_seconds=duration_seconds,  # None by default, lets API decide the optimal duration
+            prompt_influence=prompt_influence  # Default influence set to 0.3
+        )
+
+        # Write the response bytes to the specified output file
+        with open(output_path, "wb") as file:
+            for chunk in response:
+                if chunk:
+                    file.write(chunk)
+
+    def get_models(self):
+        return self.client.models.get_all()

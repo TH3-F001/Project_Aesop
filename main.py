@@ -4,6 +4,8 @@ import os.path
 from common.browser import WebBrowser
 from common.youtube import YoutubeUploader, YoutubeArgs
 from common.elevenlabs import Dictator
+from common.reddit import Reddit
+from common.content_scraper import Scraper
 from common.exceptions import RateLimitExceededException
 from common.chatgpt import ChatGPT
 from common.content_helper import Helper
@@ -329,16 +331,24 @@ def main():
     # generate_video_from_assets(channel_name, video_title)
     # organize_output_folder(channel_name, video_title)
     # compile_video(channel_name, video_title)
-    elevenlabs_credpath = "appdata/restricted/elevenlabs_auth.json"
-    elevenlabs_voices_path = "appdata/elevenlabs_voices.json"
-    dictator = Dictator(elevenlabs_credpath, elevenlabs_voices_path)
-    voice = "Nia Davis- Black Female"
-    out_path = "appdata/output/Test/eleven.mp3"
-    text = "The Fitness Gram Pacer Test is a multistage aerobic capacity test that progressively gets more difficult as it continues. The twenty meter pacer test will begin in thirty seconds. Line up at the start. The running speed starts slowly but gets faster each minute after you hear this signal bo-dee-boop"
-    dictator.convert_text_to_speech(text, out_path, voice)
-    # print("")
 
+    # #region ElevenLabs Test
+    # elevenlabs_credpath = "appdata/restricted/elevenlabs_auth.json"
+    # elevenlabs_voices_path = "appdata/elevenlabs_voices.json"
+    # test_input_path = "appdata/output/Test/input_test.mp3"
+    # dictator = Dictator(elevenlabs_credpath, elevenlabs_voices_path)
+    # voice = "Nia Davis- Black Female"
+    # out_path = "appdata/output/Test/soundfx.mp3"
+    # text = "car crash"
+    # dictator.text_to_sound_fx(text, out_path)
+    # #endregion
 
+    #region Reddit Test
+    # cred_path = "appdata/restricted/reddit_auth.json"
+    # reddit = Reddit(cred_path)
+    # reddit.get_gilded_posts("test")
+    scraper = Scraper("appdata/restricted/newsapi_auth.json")
+    scraper.get_latest_news("space")
 
 
 if __name__ == '__main__':

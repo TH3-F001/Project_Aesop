@@ -14,3 +14,5 @@ mutagen
 ffmpeg-python
 pydub
 elevenlabs
+praw
+newsapi-python
