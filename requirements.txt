@@ -16,3 +16,5 @@ pydub
 elevenlabs
 praw
 newsapi-python
+pygobject
+bump2version
