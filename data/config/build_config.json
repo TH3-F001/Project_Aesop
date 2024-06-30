@@ -2,5 +2,6 @@
     "secrets_path": "./secrets",
     "output_path": "./output",
     "log_path": "./logs",
-    "data_path": "./data"
+    "data_path": "./data",
+    "test_path": "./test"
 }
