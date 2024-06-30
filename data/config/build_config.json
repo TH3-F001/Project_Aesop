@@ -1,0 +1,5 @@
+{
+    "secrets_path": "./secrets",
+    "output_path": "./output",
+    "log_path": "./logs"
+}

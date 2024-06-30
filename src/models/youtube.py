@@ -40,7 +40,7 @@ class YoutubeUploader:
         self.MAX_RETRIES = 10
         self.RETRIABLE_EXCEPTIONS = (httplib2.HttpLib2Error, IOError)
         self.RETRIABLE_STATUS_CODES = [500, 502, 503, 504]
-        self.CLIENT_SECRETS_FILE = "appdata/restricted/google_secret.json"
+        self.CLIENT_SECRETS_FILE = "data/restricted/google_secret.json"
         self.UPLOAD_SCOPE = "https://www.googleapis.com/auth/youtube.upload"
         self.API_SERVICE_NAME = "youtube"
         self.API_VERSION = "v3"
@@ -59,7 +59,7 @@ class YoutubeUploader:
         args.keywords += ", shorts"
         self.ARGS = args
 
-        with open("appdata/missing_client_secret_msg.txt", 'r') as file:
+        with open("data/missing_client_secret_msg.txt", 'r') as file:
             self.MISSING_CLIENT_SECRETS_MESSAGE = file.read().replace("[FILE_PATH]", self.CLIENT_SECRETS_FILE)
 
 
@@ -68,7 +68,7 @@ class YoutubeUploader:
             scope=self.UPLOAD_SCOPE,
             message=self.MISSING_CLIENT_SECRETS_MESSAGE)
 
-        storage = Storage(f"appdata/restricted/google-oauth2.json")
+        storage = Storage(f"data/restricted/google-oauth2.json")
         credentials = storage.get()
 
         if credentials is None or credentials.invalid:
