@@ -40,4 +40,13 @@ remove_file_history() {
 
 # Executing the function based on whether the branch is specified
 if [[ -n "$BRANCH" ]]; then
-    echo "Removing $FILENAME from
+    echo "Removing $FILENAME from $BRANCH..."
+    remove_file_history "$BRANCH" "$FILENAME"
+else
+    echo "Removing $FILENAME from all branches..."
+    remove_file_history "" "$FILENAME"
+fi
+
+# Display cleanup message
+echo "Operation completed. If you are satisfied with the state of your repository, run the following command to clean up:"
+echo "git push origin --force --all"
