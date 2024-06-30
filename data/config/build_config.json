@@ -3,5 +3,5 @@
     "output_path": "./output",
     "log_path": "./logs",
     "data_path": "./data",
-    "test_path": "./test"
+    "temp_path": "./output/temp"
 }
