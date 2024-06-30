@@ -24,10 +24,10 @@ import requests
 class WebBrowser:
     def __init__(self, wait_time):
         # Set Filepaths:
-        self.geckodriver_path = 'data/geckodriver'
-        self.cookie_path = 'data/cookies.pkl'
-        self.local_storage_path = 'data/local_storage.json'
-        self.sessions_path = 'data/sessions.json'
+        self.geckodriver_path = 'appdata/geckodriver'
+        self.cookie_path = 'appdata/cookies.pkl'
+        self.local_storage_path = 'appdata/local_storage.json'
+        self.sessions_path = 'appdata/sessions.json'
 
         #Dictionary used for mapping By enums for data retrieval
         self.by_dict = {

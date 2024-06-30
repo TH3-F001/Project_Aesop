@@ -15,12 +15,12 @@ from typing import Dict
 import json
 
 
-ROOT_OUTPUT_DIR = "data/output"
-CREDENTIAL_DIR = "data/restricted"
+ROOT_OUTPUT_DIR = "appdata/output"
+CREDENTIAL_DIR = "appdata/restricted"
 
 def get_root_vidgen_instructions() -> str:
     print("\n Getting Root VidGen Instructions...")
-    vidgen_prompt_path = "data/vidgen_assistant_prompt.txt"
+    vidgen_prompt_path = "appdata/vidgen_assistant_prompt.txt"
     with open(vidgen_prompt_path, "r") as file:
         video_generator_prompt = file.read()
 
@@ -50,7 +50,7 @@ def channel_name_is_registered(name: str) -> bool:
 
 
 def save_channels(channels_data: Dict[str, dict]) -> None:
-    channels_path = "data/channels.json"
+    channels_path = "appdata/channels.json"
     with open(channels_path, "w") as file:
         json.dump(channels_data, file, indent=4)
 
@@ -110,7 +110,7 @@ def get_video_directory(channel_name: str, video_name: str) -> str:
 
 def get_channels() -> Dict[str, dict]:
     print("\nLoading channels.json...")
-    channels_path = "data/channels.json"
+    channels_path = "appdata/channels.json"
     if not os.path.exists(channels_path):
         raise FileNotFoundError(f"Channel Config File couldnt be found: {channels_path}")
     with open(channels_path, "r") as file:
@@ -333,21 +333,21 @@ def main():
     # compile_video(channel_name, video_title)
 
     # #region ElevenLabs Test
-    # elevenlabs_credpath = "data/restricted/elevenlabs_auth.json"
-    # elevenlabs_voices_path = "data/elevenlabs_voices.json"
-    # test_input_path = "data/output/Test/input_test.mp3"
+    # elevenlabs_credpath = "appdata/restricted/elevenlabs_auth.json"
+    # elevenlabs_voices_path = "appdata/elevenlabs_voices.json"
+    # test_input_path = "appdata/output/Test/input_test.mp3"
     # dictator = Dictator(elevenlabs_credpath, elevenlabs_voices_path)
     # voice = "Nia Davis- Black Female"
-    # out_path = "data/output/Test/soundfx.mp3"
+    # out_path = "appdata/output/Test/soundfx.mp3"
     # text = "car crash"
     # dictator.text_to_sound_fx(text, out_path)
     # #endregion
 
     #region Reddit Test
-    # cred_path = "data/restricted/reddit_auth.json"
+    # cred_path = "appdata/restricted/reddit_auth.json"
     # reddit = Reddit(cred_path)
     # reddit.get_gilded_posts("test")
-    scraper = Scraper("data/restricted/newsapi_auth.json")
+    scraper = Scraper("appdata/restricted/newsapi_auth.json")
     scraper.get_latest_news("space")
 
 

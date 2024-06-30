@@ -1,5 +1,0 @@
-glade
-gtk3
-ffmpeg
-python-gobject
-webkit2gtk
