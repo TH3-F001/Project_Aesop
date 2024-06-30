@@ -1,6 +1,6 @@
 {
-    "secrets_path": "./secrets",
-    "output_path": "./output",
-    "log_path": "./logs",
-    "data_path": "./data"
+    "secrets_path": "~/.config/aesop/secrets",
+    "output_path": "~/Videos/aesop",
+    "log_path": "/var/log/aesop",
+    "data_path": "~/.config/aesop/"
 }
