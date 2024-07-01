@@ -1,0 +1,6 @@
+#!/bin/bash
+SCRIPT_DIR=$(dirname "$(realpath "$0")")
+PROJECT_DIR=$(dirname "$SCRIPT_DIR")
+BUILD_CFG_FILE="$PROJECT_DIR/data/config/build_config.json"
+DEPENDENCIES_CSV_PATH="$PROJECT_DIR/data/config/dependencies.csv"
+TEMPLATES_DIR="$PROJECT_DIR/data/static/templates"

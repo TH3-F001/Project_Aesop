@@ -6,9 +6,11 @@
 
 SCRIPT_DIR=$(dirname "$(realpath "$0")")
 source "$SCRIPT_DIR/colors.lib"
+source "$SCRIPT_DIR/filepaths.lib"
 
 # Script Intro
 echo -e "Setting Up Project Aesop...${NC}"
+
 
 # Cache Sudo Creds
 echo -e "${CYAN} \tRequesting sudo access for installation:${NC}"
@@ -17,12 +19,6 @@ if [ $? -ne 0 ]; then
     echo -e "${RED} \t\tSudo request failed. Exiting...${NC}"
     exit 1
 fi
-
-# Relative Directories
-echo -e "${NC}\tGetting Relative FilePaths..."
-PROJECT_DIR=$(dirname "$SCRIPT_DIR")
-BUILD_CFG_PATH="$PROJECT_DIR/data/config/"
-echo -e "${GREEN}\t\tDone!${NC}"
 
 
 # Install Dependencies
@@ -34,6 +30,7 @@ fi
 
 
 # Get directory paths
+
 
 
 ## Create and activate python venv

@@ -1,0 +1,7 @@
+{
+    "secrets_dir": "$PROJECT_DIR/secrets",
+    "output_dir": "$PROJECT_DIR/output",
+    "log_dir": "$PROJECT_DIR/logs",
+    "data_dir": "$PROJECT_DIR/data",
+    "temp_dir": "$PROJECT_DIR/output/temp"
+}

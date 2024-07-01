@@ -1,7 +1,7 @@
 #!/bin/bash
 
 SCRIPT_DIR=$(dirname "$(realpath "$0")")
-CSV_FILE="$SCRIPT_DIR/dependencies.csv"
+source "${SCRIPT_DIR}/filepaths.lib"
 source "${SCRIPT_DIR}/colors.lib"
 
 INSTALL_COMMANDS=()
@@ -16,7 +16,7 @@ PKG_MANAGER_INDEX=""
 # Get Dependency Data From CSV
 detect_package_manager() {
     echo -e "\tDetermining Package Manager..."
-    IFS=',' read -ra CSV_HEADER < "$CSV_FILE"
+    IFS=',' read -ra CSV_HEADER < "$DEPENDENCIES_CSV_PATH"
 
     for i in "${!CSV_HEADER[@]}"; do
         if [[ "${CSV_HEADER[i]}" != "package" ]] && command -v "${CSV_HEADER[i]}" &> /dev/null; then
@@ -34,13 +34,13 @@ detect_package_manager() {
 }
 
 list_dependencies() {
-    awk -F',' '!/^(update|install|check_installed|package)/{print $1}' "$CSV_FILE"
+    awk -F',' '!/^(update|install|check_installed|package)/{print $1}' "$DEPENDENCIES_CSV_PATH"
 }
 
 retrieve_package_manager_commands() {
     local commands=(update install check_installed)
     for command in "${commands[@]}"; do
-        IFS=',' read -ra CSV_LINE < <(awk -v cmd="$command" -F',' '$1 == cmd {print $0}' "$CSV_FILE")
+        IFS=',' read -ra CSV_LINE < <(awk -v cmd="$command" -F',' '$1 == cmd {print $0}' "$DEPENDENCIES_CSV_PATH")
         case "$command" in
             update) UPDATE_CMD="${CSV_LINE[$PKG_MANAGER_INDEX]}" ;;
             install) INSTALL_CMD="${CSV_LINE[$PKG_MANAGER_INDEX]}" ;;
@@ -60,7 +60,7 @@ parse_package_rows() {
                 INSTALL_COMMANDS+=("$INSTALL_CMD $packages_to_install")
             fi
         fi
-    done < <(awk -F',' '!/^(update|install|check_installed|package)/' "$CSV_FILE")
+    done < <(awk -F',' '!/^(update|install|check_installed|package)/' "$DEPENDENCIES_CSV_PATH")
 }
 
 update_package_manager() {
@@ -168,16 +168,16 @@ print_batch_debug() {
 }
 #endregion
 
-initialize_and_run() {
+main() {
     echo -e "${CYAN}Installing Dependencies...${NC}"
     detect_package_manager
     retrieve_package_manager_commands
     parse_package_rows
     filter_out_installed_packages
-    print_batch_debug
-#    update_package_manager
-#    execute_install_commands
-#    final_package_check
+    update_package_manager
+    execute_install_commands
+    final_package_check
+#    print_batch_debug
 }
 
-initialize_and_run
+main
