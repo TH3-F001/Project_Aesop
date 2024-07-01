@@ -1,0 +1,8 @@
+{
+    "secrets_dir": "/etc/aesop/secrets",
+    "output_dir": "/srv/aesop/output",
+    "log_dir": "/var/log/aesop",
+    "data_dir": "/srv/aesop/data",
+    "temp_dir": "tmp/aesop",
+    "service_usergroup": "aesop-service"
+}
