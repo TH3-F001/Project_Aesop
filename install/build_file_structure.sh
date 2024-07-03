@@ -3,7 +3,9 @@
 SCRIPT_DIR=$(dirname "$(realpath "$0")")
 source "$SCRIPT_DIR/colors.lib"
 source "$SCRIPT_DIR/filepaths.lib"
+
 SERVICE_USER=""
+BUILD_DIRS=()
 
 # jq is needed to read our json files
 check_jq_installed(){
@@ -32,25 +34,17 @@ check_templates_exists(){
 
 
 retrieve_json_directories() {
-    SRV_SECRETS_DIR=$(eval_json_value "$SRV_CFG_FILE" '.secrets_dir')
-    SRV_OUTPUT_DIR=$(eval_json_value "$SRV_CFG_FILE" '.output_dir')
-    SRV_LOG_DIR=$(eval_json_value "$SRV_CFG_FILE" '.log_dir')
-    SRV_DATA_DIR=$(eval_json_value "$SRV_CFG_FILE" '.data_dir')
+    local build_cfg_files=("$SRV_CFG_FILE" "$USR_USR_CFG_FILE")
 
-    USR_OUTPUT_DIR=$(eval_json_value "$USR_CFG_FILE" '.output_dir')
-    USR_LOG_DIR=$(eval_json_value "$USR_CFG_FILE" '.log_dir')
-    USR_DATA_DIR=$(eval_json_value "$USR_CFG_FILE" '.dir')
-
-    BUILD_DIRS=(
-        "$SRV_SECRETS_DIR"
-        "$SRV_OUTPUT_DIR"
-        "$SRV_LOG_DIR"
-        "$SRV_DATA_DIR/static"
-        "$SRV_DATA_DIR/dynamic"
-        "$USR_OUTPUT_DIR"
-        "$USR_LOG_DIR"
-        "$USR_DATA_DIR"
-    )
+    # Get all directory values from json config files
+    for cfg_file in "${build_cfg_files[@]}"; do
+        for key in $(jq -r 'keys[]' "$cfg_file"); do
+            if [[ "$key" == *_dir ]]; then
+                value=$(jq -r --arg key "$key" '.[$key]' "$cfg_file")
+                BUILD_DIRS+=("$value")
+            fi
+        done
+    done
 }
 
 

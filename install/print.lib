@@ -1,0 +1,46 @@
+#!/bin/bash
+
+SCRIPT_DIR=$(dirname "$(realpath "$0")")
+source "$SCRIPT_DIR/colors.lib"
+
+exit_error() {
+    local msg="$1"
+
+    echo -e "${RED}ERROR: ${msg}${NC}" 1>&2
+    exit 1
+}
+
+exit_success() {
+    local msg="$1"
+
+    echo -e "${GREEN}SUCCESS!: ${msg}${NC}" 1>&2
+    exit 1
+}
+
+print_error() {
+    local msg=$1
+    echo -e "${RED}ERROR: ${msg}${NC})"
+}
+
+print_success() {
+    local msg=$1
+    echo -e "{GREEN}SUCCESS!: ${msg}${NC}"
+}
+
+print_title() {
+    local msg=$1
+    echo -e "${CYAN}${msg}${NC})"
+}
+
+print_warning() {
+    local msg=$1
+    echo -e "${YELLOW}${msg}${NC})"
+}
+
+print_info() {
+    local msg=$1
+    echo -e "${BLUE}${msg}${NC})"
+}
+
+
+

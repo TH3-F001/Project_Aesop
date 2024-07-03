@@ -5,39 +5,43 @@
 
 
 SCRIPT_DIR=$(dirname "$(realpath "$0")")
-source "$SCRIPT_DIR/colors.lib"
+
 source "$SCRIPT_DIR/filepaths.lib"
+source "$SCRIPT_DIR/print.lib"
 
 # Script Intro
-echo -e "Setting Up Project Aesop...${NC}"
+print_title "Setting Up Project Aesop..."
 
 
 # Cache Sudo Creds
-echo -e "${CYAN} \tRequesting sudo access for installation:${NC}"
+print_info "Requesting sudo access for installation..."
 sudo echo "" >/dev/null
 if [ $? -ne 0 ]; then
-    echo -e "${RED} \t\tSudo request failed. Exiting...${NC}"
-    exit 1
+    exit_error "\tSudo request failed. Exiting..."
 fi
 
 
 # Install Dependencies
-echo -e "${NC}\tInstalling Dependencies..."
+print_info "\tInstalling Dependencies..."
 $SCRIPT_DIR/install_dependencies.sh
 if [ $? -ne 0 ]; then
-  echo -e "${RED}Error: Failed to install Dependencies.${NC}"
+    print_error "Failed to install Dependencies."
 fi
 
 
-# Get directory paths
-
+# Generate File Structure
+print_info "\tGenerating File Structure..."
+$SCRIPT_DIR/build_file_structure.sh
+if [ $? -ne 0 ]; then
+    print_error "Failed to generate file structure."
+fi
 
 
 ## Create and activate python venv
-#if [ ! -d "venv" ] ; then
-#    python -m venv venv
-#    source env/bin/activate
-#else
-#    source env/bin/activate
-#fi
+print_info "\tGenerating Python Virtual Environment..."
+$SCRIPT_DIR/install_dependencies.sh
+if [ $? -ne 0 ]; then
+    print_error "Failed to generate file structure."
+fi
+
 
