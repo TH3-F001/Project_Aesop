@@ -25,7 +25,7 @@ fi
 print_info "\tInstalling Dependencies..."
 $SCRIPT_DIR/install_dependencies.sh
 if [ $? -ne 0 ]; then
-    print_error "Failed to install Dependencies."
+    exit_error "Failed to install Dependencies."
 fi
 
 
@@ -33,7 +33,7 @@ fi
 print_info "\tGenerating File Structure..."
 $SCRIPT_DIR/build_file_structure.sh
 if [ $? -ne 0 ]; then
-    print_error "Failed to generate file structure."
+    exit_error "Failed to generate file structure."
 fi
 
 
@@ -41,7 +41,7 @@ fi
 print_info "\tGenerating Python Virtual Environment..."
 $SCRIPT_DIR/install_dependencies.sh
 if [ $? -ne 0 ]; then
-    print_error "Failed to generate file structure."
+    exit_error "Failed to generate file structure."
 fi
 
 
