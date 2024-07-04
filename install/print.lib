@@ -19,32 +19,32 @@ exit_success() {
 
 print_error() {
     local msg=$1
-    echo -e "${RED}ERROR: ${msg}${NC})"
+    echo -e "${RED}ERROR: ${msg}${NC}"
 }
 
 print_success() {
     local msg=$1
-    echo -e "{GREEN}SUCCESS!: ${msg}${NC}"
+    echo -e "[${GREEN}SUCCESS!${NC}] ${msg}"
 }
 
 print_title() {
     local msg=$1
-    echo -e "${CYAN}${msg}${NC})"
+    echo -e "${CYAN}${msg}${NC}"
 }
 
 print_warning() {
     local msg=$1
-    echo -e "${YELLOW}${msg}${NC})"
+    echo -e "[${YELLOW}WARNING${NC}] ${msg}"
 }
 
 print_info () {
     local msg=$1
-    echo -e "${NC}${msg})"
+    echo -e "${NC}${msg}"
 }
 
 print_debug() {
     local msg=$1
-    echo -e "${BLUE}${msg}${NC})"
+    echo -e "[${BLUE}DEBUG:${NC}] ${msg}"
 }
 
 

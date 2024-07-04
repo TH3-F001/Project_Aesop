@@ -31,7 +31,7 @@ fi
 
 # Generate File Structure
 print_info "\tGenerating File Structure..."
-$SCRIPT_DIR/build_file_structure.sh
+$SCRIPT_DIR/build_fs.sh
 if [ $? -ne 0 ]; then
     exit_error "Failed to generate file structure."
 fi
