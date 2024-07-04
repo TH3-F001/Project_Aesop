@@ -42,7 +42,7 @@ check_templates_exists(){
 
 retrieve_json_directories() {
 
-    local build_cfg_files=("$SRV_CFG_FILE" "$USR_USR_CFG_FILE")
+    local build_cfg_files=("$SRV_CFG_FILE" "$USR_CFG_FILE")
     print_debug "Retrieving JSON directories..."
     print_debug build_cfg_files
     # Get all directory values from json config files

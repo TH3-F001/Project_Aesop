@@ -6,20 +6,20 @@ source "$SCRIPT_DIR/colors.lib"
 exit_error() {
     local msg="$1"
 
-    echo -e "${RED}ERROR: ${msg}${NC}" 1>&2
+    echo -e "[${RED}ERROR${NC}] ${msg}" 1>&2
     exit 1
 }
 
 exit_success() {
     local msg="$1"
 
-    echo -e "${GREEN}SUCCESS!: ${msg}${NC}" 1>&2
     exit 1
+    echo -e "[${GREEN}SUCCESS!${NC}] ${msg}" 1>&2
 }
 
 print_error() {
     local msg=$1
-    echo -e "${RED}ERROR: ${msg}${NC}"
+    echo -e "[${RED}ERROR${NC}] ${msg}"
 }
 
 print_success() {
