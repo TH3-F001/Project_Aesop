@@ -37,7 +37,12 @@ print_warning() {
     echo -e "${YELLOW}${msg}${NC})"
 }
 
-print_info() {
+print_info () {
+    local msg=$1
+    echo -e "${NC}${msg})"
+}
+
+print_debug() {
     local msg=$1
     echo -e "${BLUE}${msg}${NC})"
 }

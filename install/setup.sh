@@ -39,7 +39,7 @@ fi
 
 ## Create and activate python venv
 print_info "\tGenerating Python Virtual Environment..."
-$SCRIPT_DIR/install_dependencies.sh
+$SCRIPT_DIR/build_venv.sh
 if [ $? -ne 0 ]; then
     exit_error "Failed to generate file structure."
 fi
