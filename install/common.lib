@@ -1,0 +1,12 @@
+#!/bin/bash
+
+SCRIPT_DIR=$(dirname "$(realpath "$0")")
+source "$SCRIPT_DIR/printlog.lib"
+source "$SCRIPT_DIR/filepaths.lib"
+
+# Try to run a command, if it doesnt work, try using sudo instead
+# (Intended for file operations)
+run_or_sudo() {
+    local cmd=$@
+    eval "$cmd" || sudo bash -c "$cmd"
+}

@@ -2,15 +2,20 @@
 
 # This is the development setup script. the installer will run this,
 # it's just the bare minimum setup needed to get the project working
-
-
 SCRIPT_DIR=$(dirname "$(realpath "$0")")
+source "$SCRIPT_DIR/common.lib"
 
-source "$SCRIPT_DIR/filepaths.lib"
-source "$SCRIPT_DIR/print.lib"
+# Set verbosity level
+AESOP_SETUP_VERBOSITY=1
+if [ "$1" == "-v" ]; then
+    AESOP_SETUP_VERBOSITY=2
+elif [ "$1" == "-q" ]; then
+    AESOP_SETUP_VERBOSITY=0
+fi
+export VERBOSITY
 
 # Script Intro
-print_title "Setting Up Project Aesop..."
+print_title "Setting Up Project Aesop...\n"
 
 
 # Cache Sudo Creds

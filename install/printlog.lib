@@ -5,14 +5,12 @@ source "$SCRIPT_DIR/colors.lib"
 
 exit_error() {
     local msg="$1"
-
     echo -e "[${RED}ERROR${NC}] ${msg}" 1>&2
     exit 1
 }
 
 exit_success() {
     local msg="$1"
-
     exit 1
     echo -e "[${GREEN}SUCCESS!${NC}] ${msg}" 1>&2
 }
@@ -24,30 +22,35 @@ print_error() {
 
 print_success() {
     local msg=$1
-    echo -e "[${GREEN}SUCCESS!${NC}] ${msg}"
+    if [ "$AESOP_SETUP_VERBOSITY" -ge 1 ]; then
+        echo -e "[${GREEN}SUCCESS!${NC}] ${msg}"
+    fi
 }
 
 print_title() {
     local msg=$1
-    echo -e "${CYAN}${msg}${NC}"
+    if [ "$AESOP_SETUP_VERBOSITY" -ge 1 ]; then
+        echo -e "${CYAN}${msg}${NC}"
+    fi
 }
 
 print_warning() {
     local msg=$1
-    echo -e "[${YELLOW}WARNING${NC}] ${msg}"
+    if [ "$AESOP_SETUP_VERBOSITY" -ge 1 ]; then
+        echo -e "[${YELLOW}WARNING${NC}] ${msg}"
+    fi
 }
 
-print_info () {
+print_info() {
     local msg=$1
-    echo -e "${NC}${msg}"
+    if [ "$AESOP_SETUP_VERBOSITY" -ge 1 ]; then
+        echo -e "${NC}${msg}"
+    fi
 }
 
 print_debug() {
     local msg=$1
-    echo -e "[${BLUE}DEBUG:${NC}] ${msg}"
+    if [ "$AESOP_SETUP_VERBOSITY" -ge 2 ]; then
+        echo -e "[${BLUE}DEBUG${NC}] ${msg}"
+    fi
 }
-
-
-
-
-

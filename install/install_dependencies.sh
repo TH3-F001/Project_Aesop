@@ -1,8 +1,7 @@
 #!/bin/bash
 
 SCRIPT_DIR=$(dirname "$(realpath "$0")")
-source "${SCRIPT_DIR}/filepaths.lib"
-source "${SCRIPT_DIR}/colors.lib"
+source "$SCRIPT_DIR/common.lib"
 
 INSTALL_COMMANDS=()
 PACKAGES=()
