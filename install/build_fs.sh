@@ -49,6 +49,19 @@ retrieve_json_directories() {
     print_info "Retrieving JSON directories..."
     print_debug "Build Config Files: ${build_cfg_files[*]}"
 
+    # Initialize SRV_* variables from the JSON configuration file
+    print_debug "Initializing SRV_* variables from the JSON configuration file..."
+
+    SRV_SECRETS_DIR=$(run_or_sudo jq -r '.secrets_dir' "$SRV_CFG_FILE")
+    SRV_OUTPUT_DIR=$(run_or_sudo jq -r '.output_dir' "$SRV_CFG_FILE")
+    SRV_LOG_DIR=$(run_or_sudo jq -r '.log_dir' "$SRV_CFG_FILE")
+    SRV_DATA_DIR=$(run_or_sudo jq -r '.data_dir' "$SRV_CFG_FILE")
+
+    print_debug "Initialized SRV_SECRETS_DIR=$SRV_SECRETS_DIR"
+    print_debug "Initialized SRV_OUTPUT_DIR=$SRV_OUTPUT_DIR"
+    print_debug "Initialized SRV_LOG_DIR=$SRV_LOG_DIR"
+    print_debug "Initialized SRV_DATA_DIR=$SRV_DATA_DIR"
+
     # Get all directory values from json config files
     for cfg_file in "${build_cfg_files[@]}"; do
         print_debug "Processing config file '$cfg_file'..."
@@ -56,8 +69,6 @@ retrieve_json_directories() {
         for key in $keys; do
             if [[ "$key" == *_dir ]]; then
                 value=$(run_or_sudo jq -r --arg key "$key" '.[$key]' "$cfg_file")
-                value=$(run_or_sudo jq -r --arg key "$key" '.[$key]' "$cfg_file")
-
                 BUILD_DIRS+=("$value")
                 print_debug "Found directory key '$key' with value '$value'."
             fi
