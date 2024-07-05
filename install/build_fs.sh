@@ -52,7 +52,8 @@ retrieve_json_directories() {
     # Get all directory values from json config files
     for cfg_file in "${build_cfg_files[@]}"; do
         print_debug "Processing config file '$cfg_file'..."
-        for key in $(run_or_sudo "jq -r 'keys[]' $cfg_file"); do
+        local keys=$(run_or_sudo "jq -r 'keys[]' $cfg_file")
+        for key in $keys; do
             if [[ "$key" == *_dir ]]; then
                 value=$(run_or_sudo "jq -r --arg key $key '.[$key]' $cfg_file")
                 BUILD_DIRS+=("$value")
