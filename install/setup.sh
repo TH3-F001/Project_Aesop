@@ -12,7 +12,7 @@ if [ "$1" == "-v" ]; then
 elif [ "$1" == "-q" ]; then
     AESOP_SETUP_VERBOSITY=0
 fi
-export VERBOSITY
+export AESOP_SETUP_VERBOSITY
 
 # Script Intro
 print_title "Setting Up Project Aesop...\n"
