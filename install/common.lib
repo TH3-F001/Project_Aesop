@@ -9,13 +9,21 @@ source "$SCRIPT_DIR/filepaths.lib"
 run_or_sudo() {
     local cmd=("$@")
     local output
+    local error
 
     # Attempt to run the command normally
     output=$(eval "${cmd[@]}" 2>/dev/null)
+    error=$(eval "${cmd[@]}" 2>&1 >/dev/null)
 
     # If the command fails, run it with sudo
     if [ $? -ne 0 ]; then
-        output=$(sudo "${cmd[@]}")
+        output=$(sudo "${cmd[@]}" 2>/dev/null)
+        error=$(sudo "${cmd[@]}" 2>&1 >/dev/null)
+    fi
+
+    # Check if there was an error
+    if [ -n "$error" ]; then
+        print_error "$error"
     fi
 
     echo "$output"

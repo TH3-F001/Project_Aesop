@@ -96,7 +96,7 @@ recursive_copy() {
 
         if [[ ! -f "$new_filepath" ]]; then
             print_debug "\tCopying $source_file to $new_filepath"
-            run_or_sudo cp "$source_file $new_filepath"
+            run_or_sudo cp "$source_file" "$new_filepath"
             print_debug "Copied $source_file to $new_filepath"
         else
             print_debug "File $new_filepath already exists, skipping."
@@ -153,19 +153,19 @@ restrict_file_permissions() {
     local user=$(whoami)
 
     # Ensure both the current user and the service user group have access to the required directories and set appropriate permissions
-    run_or_sudo chown -R "$user":"$SERVICE_USER $SRV_SECRETS_DIR"
+    run_or_sudo chown -R "$user":"$SERVICE_USER" "$SRV_SECRETS_DIR"
     run_or_sudo find "$SRV_SECRETS_DIR" -type f -exec chmod 640 {} \; # rw-r-----
     run_or_sudo find "$SRV_SECRETS_DIR" -type d -exec chmod 750 {} \; # rwxr-x---
 
-    run_or_sudo chown -R "$user":"$SERVICE_USER $SRV_OUTPUT_DIR"
+    run_or_sudo chown -R "$user":"$SERVICE_USER" "$SRV_OUTPUT_DIR"
     run_or_sudo find "$SRV_OUTPUT_DIR" -type f -exec chmod 660 {} \; # rw-rw----
     run_or_sudo find "$SRV_OUTPUT_DIR" -type d -exec chmod 770 {} \; # rwxrwx---
 
-    run_or_sudo chown -R "$user":"$SERVICE_USER $SRV_LOG_DIR"
+    run_or_sudo chown -R "$user":"$SERVICE_USER" "$SRV_LOG_DIR"
     run_or_sudo find "$SRV_LOG_DIR" -type f -exec chmod 660 {} \; # rw-rw----
     run_or_sudo find "$SRV_LOG_DIR" -type d -exec chmod 770 {} \; # rwxrwx---
 
-    run_or_sudo chown -R "$user":"$SERVICE_USER $SRV_DATA_DIR"
+    run_or_sudo chown -R "$user":"$SERVICE_USER" "$SRV_DATA_DIR"
     run_or_sudo find "$SRV_DATA_DIR" -type f -exec chmod 640 {} \; # rw-r-----
     run_or_sudo find "$SRV_DATA_DIR" -type d -exec chmod 750 {} \; # rwxr-x---
 
