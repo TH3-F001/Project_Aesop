@@ -7,6 +7,8 @@ source "$SCRIPT_DIR/filepaths.lib"
 # Try to run a command, if it doesnt work, try using sudo instead
 # (Intended for file operations)
 run_or_sudo() {
-    local cmd=$@
-    eval "$cmd" || sudo bash -c "$cmd"
+    local cmd="$@"
+    local output
+    output=$(eval "$cmd" 2>/dev/null) || output=$(sudo bash -c "$cmd")
+    echo "$output"
 }

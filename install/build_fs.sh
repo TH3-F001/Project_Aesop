@@ -113,15 +113,15 @@ copy_templates() {
 
             case "$dir_name" in
                 dynamic)
-                    print_info "DYNAMIC_TEMPLATES:"
+                    print_debug "DYNAMIC_TEMPLATES"
                     recursive_copy "$dir" "$SRV_DATA_DIR/dynamic"
                     ;;
                 secrets)
-                    print_info "SECRETS_TEMPLATES:"
+                    print_debug "SECRETS_TEMPLATES:"
                     recursive_copy "$dir" "$SRV_SECRETS_DIR"
                     ;;
                 static)
-                    print_info "STATIC_TEMPLATES:"
+                    print_debug "STATIC_TEMPLATES:"
                     recursive_copy "$dir" "$SRV_DATA_DIR/static"
                     ;;
                 *)
