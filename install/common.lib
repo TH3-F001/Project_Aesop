@@ -7,8 +7,16 @@ source "$SCRIPT_DIR/filepaths.lib"
 # Try to run a command, if it doesnt work, try using sudo instead
 # (Intended for file operations)
 run_or_sudo() {
-    local cmd="$@"
+    local cmd=("$@")
     local output
-    output=$(eval "$cmd" 2>/dev/null) || output=$(sudo bash -c "$cmd")
+
+    # Attempt to run the command normally
+    output=$(eval "${cmd[@]}" 2>/dev/null)
+
+    # If the command fails, run it with sudo
+    if [ $? -ne 0 ]; then
+        output=$(sudo "${cmd[@]}")
+    fi
+
     echo "$output"
 }
