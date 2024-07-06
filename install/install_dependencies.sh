@@ -142,7 +142,7 @@ update_package_manager() {
 
 execute_install_commands() {
     echo "Running installation commands..."
-    local new_packages=()
+    local new_packages=("${PACKAGES[@]}")
     for cmd in "${INSTALL_COMMANDS[@]}"; do
         echo "Executing: $cmd"
         if eval "$cmd"; then
@@ -165,7 +165,7 @@ execute_install_commands() {
 
 
 split_packages() {
-    if [ -z "${PACKAGES[@]}" ]; then
+    if [ -z "${PACKAGES[*]}" ]; then
         print_error "PACKAGES array is empty or undefined."
         return 1
     fi
