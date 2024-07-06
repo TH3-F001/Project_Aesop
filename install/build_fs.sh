@@ -360,7 +360,7 @@ main() {
     print_success "User directories linked successfully."
 
     print_debug "Script execution completed."
-    print_success "All operations in build_fs.sh completed successfully!"
+    print_success "File Structure Built Successfully!"
 }
 
 main
