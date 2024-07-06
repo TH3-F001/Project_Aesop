@@ -227,7 +227,7 @@ final_package_check() {
 
     if [[ ${#PACKAGES[@]} -gt 0 ]]; then
         print_warning "Some dependencies failed to install. Please install the following packages manually:"
-        for pkg in "${PACKAGES[@]}"; do
+        for pkg in "${FAILED_PACKAGES[@]}"; do
             echo -e "${RED}- $pkg${NC}"
         done
     fi
@@ -328,7 +328,7 @@ main() {
     # Perform Final Checking
     print_info "\nInitiating final package check..."
     final_package_check
-
+else
     print_batch_debug
 }
 
