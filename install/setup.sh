@@ -31,7 +31,6 @@ chmod +x "$SCRIPT_DIR/"*.sh
 
 
 # Install Dependencies
-echo -e "\n"
 $SCRIPT_DIR/install_dependencies.sh
 if [ $? -ne 0 ]; then
     exit_error "Failed to install Dependencies."

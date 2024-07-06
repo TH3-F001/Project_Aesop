@@ -142,20 +142,18 @@ update_package_manager() {
 }
 
 execute_install_commands() {
-    echo "Running installation commands..."
     for cmd in "${INSTALL_COMMANDS[@]}"; do
-        echo "Executing: $cmd"
+        print_debug "Executing: $cmd"
+        local package_name=$(echo "$cmd" | awk '{print $NF}')
         if eval "$cmd"; then
-            local package_name=$(echo "$cmd" | awk '{print $NF}')
-            new_packages=()
             for pkg in "${PACKAGES[@]}"; do
                 if [[ "$pkg" == "$package_name" ]]; then
                     INSTALLED_PACKAGES+=("$package_name")
                 fi
             done
-            PACKAGES=("${new_packages[@]}")
         else
             print_warning "Failed to install $cmd"
+            FAILED_PACKAGES+=("$package_name")
         fi
     done
 }

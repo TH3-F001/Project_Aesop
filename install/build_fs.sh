@@ -6,7 +6,6 @@ source "$SCRIPT_DIR/common.lib"
 SERVICE_USER=""
 BUILD_DIRS=()
 
-print_title "Entering build_fs.sh script"
 
 # jq is needed to read our json files
 check_jq_installed() {
