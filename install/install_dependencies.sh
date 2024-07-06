@@ -176,21 +176,6 @@ split_packages() {
     fi
 }
 
-final_package_check() {
-    if [[ ${#INSTALLED_PACKAGES[@]} -gt 0 ]]; then
-        print_success "The following dependencies were installed successfully:"
-        for pkg in "${INSTALLED_PACKAGES[@]}"; do
-            echo -e "${GREEN}- $pkg${NC}"
-        done
-    fi
-
-    if [[ ${#FAILED_PACKAGES[@]} -gt 0 ]]; then
-        print_warning "Some dependencies failed to install. Please install the following packages manually:"
-        for pkg in "${FAILED_PACKAGES[@]}"; do
-            echo -e "${RED}- $pkg${NC}"
-        done
-    fi
-}
 
 #region Debug
 print_install_commands() {
@@ -289,11 +274,6 @@ main() {
         exit 1
     fi
     print_success "Packages Installed."
-
-    # Perform Final Checking
-    print_info "\nInitiating final package check..."
-    final_package_check
-    print_batch_debug
 }
 
 main
