@@ -312,7 +312,7 @@ main() {
 
     # Update Package Manager Repository
     print_info "Updating $PKG_MANAGER repository..."
-    update_package_manager & pid=$!
+    update_package_manager > /dev/null 2>&1 & pid=$!
     show_loading_animation $pid
     wait $pid
     if [ $? -ne 0 ]; then
@@ -323,7 +323,7 @@ main() {
 
     # Install Dependency Packages
     print_info "Installing Packages..."
-    execute_install_commands & pid=$!
+    execute_install_commands > /dev/null 2>&1 & pid=$!
     show_loading_animation $pid
     wait $pid
     if [ $? -ne 0 ]; then
