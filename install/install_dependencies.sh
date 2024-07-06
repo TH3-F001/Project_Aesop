@@ -146,11 +146,7 @@ execute_install_commands() {
         print_debug "Executing: $cmd"
         local package_name=$(echo "$cmd" | awk '{print $NF}')
         if eval "$cmd"; then
-            for pkg in "${PACKAGES[@]}"; do
-                if [[ "$pkg" == "$package_name" ]]; then
-                    INSTALLED_PACKAGES+=("$package_name")
-                fi
-            done
+            INSTALLED_PACKAGES+=("$package_name")
         else
             print_warning "Failed to install $cmd"
             FAILED_PACKAGES+=("$package_name")
@@ -328,7 +324,7 @@ main() {
     # Perform Final Checking
     print_info "\nInitiating final package check..."
     final_package_check
-    print_batch_debug
+#    print_batch_debug
 }
 
 main
