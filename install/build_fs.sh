@@ -232,13 +232,14 @@ create_service_user_and_group() {
 }
 
 copy_build_cfgs() {
-    run_or_sudo cp "$SRV_CFG_FILE" "$SRV_DATA_DIR/static"
+    mkdir -p $SRV_DATA_DIR/static/
+    run_or_sudo cp "$SRV_CFG_FILE" "$SRV_DATA_DIR/static/"
     if [[ $? -ne 0 ]]; then
         print_error "Failed to copy $SRV_CFG_FILE to $SRV_DATA_DIR/static"
         return 1
     fi
 
-    run_or_sudo cp "$USR_CFG_FILE" "$SRV_DATA_DIR/static"
+    run_or_sudo cp "$USR_CFG_FILE" "$SRV_DATA_DIR/static/"
     if [[ $? -ne 0 ]]; then
         print_error "Failed to copy $USR_CFG_FILE to $USR_DATA_DIR/static"
         return 1
