@@ -26,7 +26,7 @@ if [ $? -ne 0 ]; then
 fi
 
 # Make all scripts executable
-print_info "\nMaking scripts exectuable...\n"
+print_info "Making scripts exectuable...\n"
 chmod +x "$SCRIPT_DIR/"*.sh
 
 

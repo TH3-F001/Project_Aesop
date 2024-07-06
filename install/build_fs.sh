@@ -201,7 +201,20 @@ copy_templates() {
     done
 }
 
+copy_build_cfgs() {
+    run_or_sudo mkdir -p $SRV_DATA_DIR/static/
+    run_or_sudo cp "$SRV_CFG_FILE" "$SRV_DATA_DIR/static/"
+    if [[ $? -ne 0 ]]; then
+        print_error "Failed to copy $SRV_CFG_FILE to $SRV_DATA_DIR/static"
+        return 1
+    fi
 
+    run_or_sudo cp "$USR_CFG_FILE" "$SRV_DATA_DIR/static/"
+    if [[ $? -ne 0 ]]; then
+        print_error "Failed to copy $USR_CFG_FILE to $USR_DATA_DIR/static"
+        return 1
+    fi
+}
 
 create_service_user_and_group() {
     print_debug "Creating service user and group..."
@@ -231,20 +244,7 @@ create_service_user_and_group() {
     print_debug "Service user '$SERVICE_USER' created, and current user '$current_user' added to the group '$SERVICE_USER'."
 }
 
-copy_build_cfgs() {
-    run_or_sudo -p $SRV_DATA_DIR/static/
-    run_or_sudo cp "$SRV_CFG_FILE" "$SRV_DATA_DIR/static/"
-    if [[ $? -ne 0 ]]; then
-        print_error "Failed to copy $SRV_CFG_FILE to $SRV_DATA_DIR/static"
-        return 1
-    fi
 
-    run_or_sudo cp "$USR_CFG_FILE" "$SRV_DATA_DIR/static/"
-    if [[ $? -ne 0 ]]; then
-        print_error "Failed to copy $USR_CFG_FILE to $USR_DATA_DIR/static"
-        return 1
-    fi
-}
 
 
 restrict_file_permissions() {
