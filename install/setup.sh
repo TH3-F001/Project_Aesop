@@ -16,6 +16,7 @@ elif [ "$1" == "-q" ]; then
     AESOP_SETUP_VERBOSITY=0
 fi
 export AESOP_SETUP_VERBOSITY
+print_debug "Verbosity: $AESOP_SETUP_VERBOSITY"
 
 # Cache Sudo Creds
 print_info "Requesting sudo access for installation..."
