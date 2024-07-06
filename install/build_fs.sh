@@ -22,12 +22,12 @@ check_templates_exist() {
         print_error "$TEMPLATES_DIR does not exist or is not a directory. This shouldn't happen. Maybe check the repo?"
         return 1
     fi
-
 }
 
 retrieve_json_directories() {
     local build_cfg_files=("$SRV_CFG_FILE" "$USR_CFG_FILE")
     print_debug "Build Config Files: ${build_cfg_files[*]}"
+
 
     declare -A dirs=(
         ["SRV_SECRETS_DIR"]=".secrets_dir"
@@ -41,7 +41,8 @@ retrieve_json_directories() {
         local jq_filter=$2
         local config_file=$3
 
-        local dir=$(run_or_sudo jq -r "$jq_filter" "$config_file")
+        local dir
+        dir=$(run_or_sudo jq -r "$jq_filter" "$config_file")
         if [ $? -ne 0 ] || [ -z "$dir" ]; then
             print_error "Failed to retrieve '$jq_filter' from $config_file"
             return 1
@@ -56,7 +57,8 @@ retrieve_json_directories() {
 
     for cfg_file in "${build_cfg_files[@]}"; do
         print_debug "Processing config file '$cfg_file'..."
-        local keys=$(run_or_sudo jq -r 'keys[]' "$cfg_file")
+        local keys
+        keys=$(run_or_sudo jq -r 'keys[]' "$cfg_file")
         if [ $? -ne 0 ]; then
             print_error "Failed to retrieve keys from $cfg_file"
             return 1
@@ -83,7 +85,7 @@ build_base_directories() {
     print_debug "Building base directories..."
 
     for dir in "${BUILD_DIRS[@]}"; do
-        run_or_sudo mkdir -p $dir >/dev/null
+        run_or_sudo mkdir -p "$dir" >/dev/null
         if [ $? -eq 0 ]; then
             print_debug "Created directory: $dir"
         else
@@ -184,7 +186,7 @@ copy_templates() {
 }
 
 copy_build_cfgs() {
-    run_or_sudo mkdir -p $SRV_DATA_DIR/static/
+    run_or_sudo mkdir -p "$SRV_DATA_DIR"/static/
     run_or_sudo cp "$SRV_CFG_FILE" "$SRV_DATA_DIR/static/"
     if [[ $? -ne 0 ]]; then
         print_error "Failed to copy $SRV_CFG_FILE to $SRV_DATA_DIR/static"
@@ -196,12 +198,14 @@ copy_build_cfgs() {
         print_error "Failed to copy $USR_CFG_FILE to $USR_DATA_DIR/static"
         return 1
     fi
+    update_usr_cfg_file
 }
 
 create_service_user_and_group() {
     print_debug "Creating service user and group..."
 
-    local current_user=$(whoami)
+    local current_user
+    current_user=$(whoami)
     if [[ $? -ne 0 ]]; then
         print_error "Failed to get the current user."
         return 1
@@ -226,12 +230,28 @@ create_service_user_and_group() {
     print_debug "Service user '$SERVICE_USER' created, and current user '$current_user' added to the group '$SERVICE_USER'."
 }
 
+update_usr_cfg_file() {
+    local CURRENT_USER
+    CURRENT_USER=$(whoami)
 
+    local json_content
+    json_content=$(cat "$USR_CFG_FILE")
+    echo "Original JSON content: $json_content"
+    local modified_content
+    modified_content=$(echo "$json_content" | sed "s|\$(whoami)|$(whoami)|g")
+    echo "Modified JSON content: $modified_content"
+
+    local output_file
+    output_file="$SRV_DATA_DIR/static/$(basename $USR_CFG_FILE)"
+    echo "Output File: $output_file"
+    echo "$modified_content" | sudo tee "$output_file" > /dev/null
+}
 
 
 restrict_file_permissions() {
     print_debug "Restricting file permissions..."
-    local user=$(whoami)
+    local user
+    user=$(whoami)
     if [[ $? -ne 0 ]]; then
         print_error "Failed to determine the current user."
         return 1
@@ -271,7 +291,8 @@ restrict_file_permissions() {
 
 
 link_user_directories() {
-    local user=$(whoami)
+    local user
+    user=$(whoami)
     if [[ $? -ne 0 ]]; then
         print_error "Failed to determine the current user."
         return 1
@@ -280,12 +301,16 @@ link_user_directories() {
     link_directory() {
         local src_dir=$1
         local dest_dir=$2
-        run_or_sudo ln -sf "$src_dir" "$dest_dir" >/dev/null
+        run_or_sudo ln -sf "$src_dir"/* "$dest_dir" >/dev/null
         if [[ $? -ne 0 ]]; then
             print_error "Failed to link $src_dir to $dest_dir."
             return 1
         fi
     }
+
+    USR_OUTPUT_DIR=$(run_or_sudo jq -r '.output_dir' "$USR_CFG_FILE" | eval echo "$(cat -)")
+    USR_LOG_DIR=$(run_or_sudo jq -r '.log_dir' "$USR_CFG_FILE" | eval echo "$(cat -)")
+    USR_DATA_DIR=$(run_or_sudo jq -r '.data_dir' "$USR_CFG_FILE" | eval echo "$(cat -)")
 
     link_directory "$SRV_OUTPUT_DIR" "$USR_OUTPUT_DIR" || return 1
     link_directory "$SRV_LOG_DIR" "$USR_LOG_DIR" || return 1
@@ -361,6 +386,7 @@ main() {
     fi
     print_success "Build configs copied successfully."
 
+
     # Restrict file permissions for service level assets
     print_info "\nRestricting file permissions..."
     restrict_file_permissions
@@ -379,7 +405,6 @@ main() {
     fi
     print_success "User directories linked successfully."
 
-    print_debug "Script execution completed."
     print_success "File Structure Built Successfully!"
 }
 
