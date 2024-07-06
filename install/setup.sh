@@ -16,7 +16,7 @@ export AESOP_SETUP_VERBOSITY
 
 
 # Script Intro
-print_title "Setting Up Project Aesop...\n"
+print_title "Setting Up Project Aesop..."
 
 # Cache Sudo Creds
 print_info "\nRequesting sudo access for installation..."
@@ -31,7 +31,7 @@ chmod +x "$SCRIPT_DIR/"*.sh
 
 
 # Install Dependencies
-echo -e "\n\n"
+echo -e "\n"
 $SCRIPT_DIR/install_dependencies.sh
 if [ $? -ne 0 ]; then
     exit_error "Failed to install Dependencies."
@@ -39,7 +39,7 @@ fi
 
 
 # Generate File Structure
-echo -e "\n\n"
+echo -e "\n"
 $SCRIPT_DIR/build_fs.sh
 if [ $? -ne 0 ]; then
     exit_error "Failed to generate file structure."
@@ -47,7 +47,7 @@ fi
 
 
 ## Create and activate python venv
-echo -e "\n\n"
+echo -e "\n"
 $SCRIPT_DIR/build_venv.sh
 if [ $? -ne 0 ]; then
     exit_error "Failed to Generate Python Virtual Environment."

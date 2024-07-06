@@ -202,10 +202,6 @@ filter_out_installed_packages() {
     local packages_to_install=()
     for package in "${PACKAGES[@]}"; do
         if ! eval "$CHECK_CMD $package" &>/dev/null; then
-            if [ $? -ne 0 ]; then
-                print_error "Failed to check if package $package is installed."
-                return 1
-            fi
             packages_to_install+=("$package")
             INSTALL_COMMANDS+=("$INSTALL_CMD $package")
         else
