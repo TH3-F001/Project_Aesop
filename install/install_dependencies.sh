@@ -14,22 +14,31 @@ PKG_MANAGER_INDEX=""
 
 # Get Dependency Data From CSV
 detect_package_manager() {
-    echo -e "\tDetermining Package Manager..."
+    print_debug "Determining Package Manager..."
+
+    if [[ ! -f "$DEPENDENCIES_CSV_PATH" ]]; then
+        print_error "Dependencies CSV file not found at path: $DEPENDENCIES_CSV_PATH"
+        return 1
+    fi
+
     IFS=',' read -ra CSV_HEADER < "$DEPENDENCIES_CSV_PATH"
+    if [[ $? -ne 0 || ${#CSV_HEADER[@]} -eq 0 ]]; then
+        print_error "Failed to read dependencies CSV file or it is empty: $DEPENDENCIES_CSV_PATH"
+        return 1
+    fi
 
     for i in "${!CSV_HEADER[@]}"; do
         if [[ "${CSV_HEADER[i]}" != "package" ]] && command -v "${CSV_HEADER[i]}" &> /dev/null; then
             PKG_MANAGER="${CSV_HEADER[i]}"
             PKG_MANAGER_INDEX="$i"
-            echo -e "${GREEN}\t\tPackage manager found: $PKG_MANAGER${NC}"
+            print_debug "Package manager found: $PKG_MANAGER"
             return
         fi
     done
 
-    echo -e "${YELLOW}\tERROR: No supported package manager found. Please install the following dependencies manually:"
+    print_error "No supported package manager found. Please install the following dependencies manually:"
     list_dependencies
-    echo -e "${NC}"
-    exit 1
+    return 1
 }
 
 list_dependencies() {
@@ -38,40 +47,103 @@ list_dependencies() {
 
 retrieve_package_manager_commands() {
     local commands=(update install check_installed)
+
+    if [[ ! -f "$DEPENDENCIES_CSV_PATH" ]]; then
+        print_error "Dependencies CSV file not found: $DEPENDENCIES_CSV_PATH"
+        return 1
+    fi
+
     for command in "${commands[@]}"; do
         IFS=',' read -ra CSV_LINE < <(awk -v cmd="$command" -F',' '$1 == cmd {print $0}' "$DEPENDENCIES_CSV_PATH")
+
+        if [[ ${#CSV_LINE[@]} -le $PKG_MANAGER_INDEX ]]; then
+            print_error "Invalid package manager index for command: $command"
+            return 1
+        fi
+
         case "$command" in
-            update) UPDATE_CMD="${CSV_LINE[$PKG_MANAGER_INDEX]}" ;;
-            install) INSTALL_CMD="${CSV_LINE[$PKG_MANAGER_INDEX]}" ;;
-            check_installed) CHECK_CMD="${CSV_LINE[$PKG_MANAGER_INDEX]}" ;;
+            update)
+                if [[ -z "${CSV_LINE[$PKG_MANAGER_INDEX]}" ]]; then
+                    print_error "Update command not found in CSV for command: $command"
+                    return 1
+                fi
+                UPDATE_CMD="${CSV_LINE[$PKG_MANAGER_INDEX]}"
+                ;;
+            install)
+                if [[ -z "${CSV_LINE[$PKG_MANAGER_INDEX]}" ]]; then
+                    print_error "Install command not found in CSV for command: $command"
+                    return 1
+                fi
+                INSTALL_CMD="${CSV_LINE[$PKG_MANAGER_INDEX]}"
+                ;;
+            check_installed)
+                if [[ -z "${CSV_LINE[$PKG_MANAGER_INDEX]}" ]]; then
+                    print_error "Check installed command not found in CSV for command: $command"
+                    return 1
+                fi
+                CHECK_CMD="${CSV_LINE[$PKG_MANAGER_INDEX]}"
+                ;;
+            *)
+                print_error "Unknown command: $command"
+                return 1
+                ;;
         esac
     done
 }
 
+
 parse_package_rows() {
+    if [[ ! -f "$DEPENDENCIES_CSV_PATH" ]]; then
+        print_error "Dependencies CSV file not found at path: $DEPENDENCIES_CSV_PATH"
+        return 1
+    fi
+
     while IFS=',' read -ra CSV_LINE; do
         local packages_to_install="${CSV_LINE[$PKG_MANAGER_INDEX]}"
+        if [[ $? -ne 0 ]]; then
+            print_error "Failed to read CSV line"
+            return 1
+        fi
+
         if [[ -n "$packages_to_install" && "$packages_to_install" != "[OVERRIDE]" ]]; then
             if [[ "$packages_to_install" == *"[OVERRIDE]"* ]]; then
                 INSTALL_COMMANDS+=("${packages_to_install//\[OVERRIDE\]/}")
+                if [[ $? -ne 0 ]]; then
+                    print_error "Failed to replace [OVERRIDE] in package name: $packages_to_install"
+                    return 1
+                fi
             else
                 PACKAGES+=("$packages_to_install")
+                if [[ $? -ne 0 ]]; then
+                    print_error "Failed to add package to the list: $packages_to_install"
+                    return 1
+                fi
+
                 INSTALL_COMMANDS+=("$INSTALL_CMD $packages_to_install")
+                if [[ $? -ne 0 ]]; then
+                    print_error "Failed to add install command for package: $packages_to_install"
+                    return 1
+                fi
             fi
         fi
     done < <(awk -F',' '!/^(update|install|check_installed|package)/' "$DEPENDENCIES_CSV_PATH")
+
+    if [[ $? -ne 0 ]]; then
+        print_error "Failed to process CSV file: $DEPENDENCIES_CSV_PATH"
+        return 1
+    fi
 }
 
+
 update_package_manager() {
-    echo -e "\tUpdating package manager with command: $UPDATE_CMD"
+    print_debug "Updating package manager with command: $UPDATE_CMD"
     eval "$UPDATE_CMD"
 }
 
 execute_install_commands() {
-    echo "Running installation commands..."
     local new_packages=()
     for cmd in "${INSTALL_COMMANDS[@]}"; do
-        echo "Executing: $cmd"
+        print_debug "Executing: $cmd"
         if eval "$cmd"; then
             local package_name=$(echo "$cmd" | awk '{print $NF}')
             new_packages=()
@@ -84,55 +156,87 @@ execute_install_commands() {
             done
             PACKAGES=("${new_packages[@]}")
         else
-            echo -e "${RED}Failed to install $cmd${NC}"
+            print_error "Failed to install $cmd"
+            return 1
         fi
     done
 }
 
+split_packages() {
+    if [ -z "${PACKAGES[@]}" ]; then
+        print_error "PACKAGES array is empty or undefined."
+        return 1
+    fi
+
+    local new_packages=()
+    for item in "${PACKAGES[@]}"; do
+        if [[ -z "$item" ]]; then
+            print_error "Empty item found in PACKAGES array."
+            return 1
+        fi
+
+        for pkg in $item; do
+            if [[ -z "$pkg" ]]; then
+                print_error "Empty package found while splitting items."
+                return 1
+            fi
+            new_packages+=("$pkg")
+        done
+    done
+
+    if [[ ${#new_packages[@]} -eq 0 ]]; then
+        print_error "No packages were split or found."
+        return 1
+    fi
+
+    PACKAGES=("${new_packages[@]}")
+}
+
 filter_out_installed_packages() {
     split_packages
+    if [ $? -ne 0 ]; then
+        print_error "Failed to split packages."
+        return 1
+    fi
+
     local packages_to_install=()
     for package in "${PACKAGES[@]}"; do
         if ! eval "$CHECK_CMD $package" &>/dev/null; then
+            if [ $? -ne 0 ]; then
+                print_error "Failed to check if package $package is installed."
+                return 1
+            fi
             packages_to_install+=("$package")
             INSTALL_COMMANDS+=("$INSTALL_CMD $package")
         else
             INSTALLED_PACKAGES+=("$package")
         fi
     done
+
+    if [ ${#packages_to_install[@]} -eq 0 ]; then
+        print_error "No packages to install."
+        return 1
+    fi
+
     PACKAGES=("${packages_to_install[@]}")
 }
 
-split_packages() {
-    local new_packages=()
-    for item in "${PACKAGES[@]}"; do
-        for pkg in $item; do
-            new_packages+=("$pkg")
-        done
-    done
-    PACKAGES=("${new_packages[@]}")
-}
+
+
 
 final_package_check() {
     if [[ ${#INSTALLED_PACKAGES[@]} -gt 0 ]]; then
-        echo -e "${GREEN}The following dependencies were installed successfully:${NC}"
+        print_success "The following dependencies were installed successfully:"
         for pkg in "${INSTALLED_PACKAGES[@]}"; do
-            echo -e "${CYAN}- $pkg${NC}"
+            echo -e "${GREEN}- $pkg${NC}"
         done
-        echo ""
     fi
 
     if [[ ${#PACKAGES[@]} -gt 0 ]]; then
-        echo -e "${YELLOW}Some dependencies failed to install. Please install the following packages manually:${NC}"
+        print_warning "Some dependencies failed to install. Please install the following packages manually:"
         for pkg in "${PACKAGES[@]}"; do
             echo -e "${RED}- $pkg${NC}"
         done
-    else
-        if [[ ${#INSTALLED_PACKAGES[@]} -gt 0 ]]; then
-            echo -e "${GREEN}All dependencies installed successfully!${NC}"
-        else
-            echo -e "${GREEN}No dependencies needed installation.${NC}"
-        fi
     fi
 }
 
@@ -168,14 +272,70 @@ print_batch_debug() {
 #endregion
 
 main() {
-    echo -e "${CYAN}Installing Dependencies...${NC}"
+    print_title "Installing System Dependencies..."
+
+    # Determine which package manager is installed
+    print_info "\nDetecting Package Manager..."
     detect_package_manager
+    if [ $? -ne 0 ]; then
+        print_error "Could Not find a supported Package Manager."
+        exit 1
+    fi
+    print_success "Package Manager Found: $PKG_MANAGER"
+
+    # Retrieve package manager commands
+    print_info "\nRetrieving Package Manager Commands..."
     retrieve_package_manager_commands
+    if [ $? -ne 0 ]; then
+        print_error "Could not retrieve package manager commands."
+        exit 1
+    fi
+    print_success "Initialized Package Manager Commands: $PKG_MANAGER"
+
+    # Parse Package Rows
+    print_info "Parsing Packages..."
     parse_package_rows
+    if [ $? -ne 0 ]; then
+        print_error "Could not parse packages."
+        exit 1
+    fi
+    print_success "Packages Parsed."
+
+    # Filter Installed Packages
+    print_info "Filtering Out Installed Packages..."
     filter_out_installed_packages
-    update_package_manager
-    execute_install_commands
+    if [ $? -ne 0 ]; then
+        print_error "Could not filter installed packages"
+        exit 1
+    fi
+    print_success "Filtered installed packages"
+
+    # Update Package Manager Repository
+    print_info "Updating $PKG_MANAGER repository..."
+    update_package_manager & pid=$!
+    show_loading_animation $pid
+    wait $pid
+    if [ $? -ne 0 ]; then
+        print_error "Failed to update repository."
+        exit 1
+    fi
+    print_success "$PKG_MANAGER repository updated"
+
+    # Install Dependency Packages
+    print_info "Installing Packages..."
+    execute_install_commands & pid=$!
+    show_loading_animation $pid
+    wait $pid
+    if [ $? -ne 0 ]; then
+        print_error "Failed to install packages."
+        exit 1
+    fi
+    print_success "Packages Installed."
+
+    # Perform Final Checking
+    print_info "Initiating final package check..."
     final_package_check
+
 #    print_batch_debug
 }
 

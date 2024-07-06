@@ -66,7 +66,7 @@ main() {
     print_title "Building Python Virtual Environment..."
 
     # Find the Python Binary
-    print_info "Finding Python Binary..."
+    print_info "\nFinding Python Binary..."
     PYTHON_BINARY=$(get_PYTHON_BINARYary)
     if [ $? -ne 0 ]; then
         print_error "Failed to restrict file permissions."
@@ -75,7 +75,7 @@ main() {
     print_success "File permissions restricted successfully."
 
     # Add python Binary to config files
-    print_info "Updating Config Files with python binary name"
+    print_info "\nUpdating Config Files with python binary name..."
     update_json_with_python_binary
     if [ $? -ne 0 ]; then
         print_error "Failed to update Config Files."
@@ -84,7 +84,7 @@ main() {
     print_success "Config Files Updated."
 
     # Build Venv
-    print_info "Building Venv"
+    print_info "\nBuilding Venv..."
     build_venv
     if [ $? -ne 0 ]; then
         print_error "Failed to build Venv."
