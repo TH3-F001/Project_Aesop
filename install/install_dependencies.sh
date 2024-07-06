@@ -141,26 +141,25 @@ update_package_manager() {
 }
 
 execute_install_commands() {
-    local new_packages=()
     for cmd in "${INSTALL_COMMANDS[@]}"; do
         print_debug "Executing: $cmd"
         if eval "$cmd"; then
             local package_name=$(echo "$cmd" | awk '{print $NF}')
-            new_packages=()
-            for pkg in "${PACKAGES[@]}"; do
-                if [[ "$pkg" != "$package_name" ]]; then
-                    new_packages+=("$pkg")
-                else
-                    INSTALLED_PACKAGES+=("$package_name")
+            for i in "${!PACKAGES[@]}"; do
+                if [[ "${PACKAGES[i]}" == "$package_name" ]]; then
+                    unset 'PACKAGES[i]'
                 fi
             done
-            PACKAGES=("${new_packages[@]}")
+            # Remove empty elements from PACKAGES
+            PACKAGES=("${PACKAGES[@]}")
+            INSTALLED_PACKAGES+=("$package_name")
         else
             print_error "Failed to install $cmd"
             return 1
         fi
     done
 }
+
 
 split_packages() {
     if [ -z "${PACKAGES[@]}" ]; then
