@@ -119,12 +119,11 @@ recursive_copy() {
     print_debug "Copying file structure from '$src_dir' to '$dest_dir'..."
 
     # Check if source and destination directories exist
-    for dir in "$src_dir" "$dest_dir"; do
-        if [[ ! -d "$dir" ]]; then
-            print_error "Directory '$dir' does not exist."
-            return 1
-        fi
-    done
+    if [[ ! -d "$src_dir" ]]; then
+        print_error "Source directory '$dir' does not exist."
+        return 1
+    fi
+
 
     # Function to create directories and copy files
     copy_file() {
