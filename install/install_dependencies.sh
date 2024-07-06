@@ -323,7 +323,7 @@ main() {
     # Perform Final Checking
     print_info "\nInitiating final package check..."
     final_package_check
-#    print_batch_debug
+    print_batch_debug
 }
 
 main
