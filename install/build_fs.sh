@@ -119,10 +119,9 @@ recursive_copy() {
 
     # Check if source and destination directories exist
     if [[ ! -d "$src_dir" ]]; then
-        print_error "Source directory '$dir' does not exist."
+        print_error "Source directory '$src_dir' does not exist."
         return 1
     fi
-
 
     # Function to create directories and copy files
     copy_file() {
@@ -131,20 +130,21 @@ recursive_copy() {
         local new_filename="${relative_path/_template.json/.json}"
         new_filename="${new_filename/_template.txt/.txt}"
         local new_filepath="$dest_dir/$new_filename"
-        local new_filepath_dir=$(dirname "$new_filepath")
+        local new_filepath_dir
+        new_filepath_dir=$(dirname "$new_filepath")
 
-        run_or_sudo mkdir -p "$new_filepath_dir" >/dev/null || {
+        if ! run_or_sudo mkdir -p "$new_filepath_dir" >/dev/null; then
             print_error "Failed to create directory: $new_filepath_dir"
             return 1
-        }
+        fi
         print_debug "Created directory: $new_filepath_dir"
 
         if [[ ! -f "$new_filepath" ]]; then
             print_debug "Copying $source_file to $new_filepath"
-            run_or_sudo cp "$source_file" "$new_filepath" >/dev/null || {
+            if ! run_or_sudo cp "$source_file" "$new_filepath" >/dev/null; then
                 print_error "Failed to copy $source_file to $new_filepath"
                 return 1
-            }
+            fi
             print_debug "Copied $source_file to $new_filepath"
         else
             print_debug "File $new_filepath already exists, skipping."
@@ -152,13 +152,17 @@ recursive_copy() {
     }
 
     # Find and process files
-    find "$src_dir" -type f | while read -r source_file; do
-        [[ -z "$source_file" ]] && {
+    if ! find "$src_dir" -type f | while IFS= read -r source_file; do
+        if [[ -z "$source_file" ]]; then
             print_error "Error reading source file path."
             return 1
-        }
-        copy_file "$source_file"
-    done
+        fi
+        if ! copy_file "$source_file"; then
+            return 1
+        fi
+    done; then
+        return 1
+    fi
 }
 
 copy_templates() {
@@ -171,7 +175,7 @@ copy_templates() {
 
     local destinations=(
         [dynamic]="$SRV_DATA_DIR/dynamic"
-        [secrets]="$SRV_SECRETS_DIR"
+        [secrets]="$SRV_SECRETS_DIR/"
         [static]="$SRV_DATA_DIR/static"
     )
 
@@ -181,7 +185,7 @@ copy_templates() {
             print_debug "Processing template directory: $dir_name"
 
             if [[ -n ${destinations[$dir_name]} ]]; then
-                print_debug "${dir_name^^}_TEMPLATES:"
+                print_debug "Copying ${dir_name} templates..."
                 recursive_copy "$dir" "${destinations[$dir_name]}"
                 if [[ $? -ne 0 ]]; then
                     print_error "Failed to copy $dir_name templates from $dir to ${destinations[$dir_name]}"
