@@ -29,6 +29,7 @@ fi
 print_info "\tMaking scripts exectuable..."
 chmod +x "$SCRIPT_DIR/"*.sh
 
+
 # Install Dependencies
 print_info "\tInstalling Dependencies..."
 $SCRIPT_DIR/install_dependencies.sh
