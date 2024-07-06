@@ -6,6 +6,7 @@ source "$SCRIPT_DIR/common.lib"
 INSTALL_COMMANDS=()
 PACKAGES=()
 INSTALLED_PACKAGES=()
+FAILED_PACKAGES=()
 UPDATE_CMD=""
 INSTALL_CMD=""
 CHECK_CMD=""
@@ -142,23 +143,19 @@ update_package_manager() {
 
 execute_install_commands() {
     echo "Running installation commands..."
-    local new_packages=("${PACKAGES[@]}")
     for cmd in "${INSTALL_COMMANDS[@]}"; do
         echo "Executing: $cmd"
         if eval "$cmd"; then
             local package_name=$(echo "$cmd" | awk '{print $NF}')
             new_packages=()
             for pkg in "${PACKAGES[@]}"; do
-                if [[ "$pkg" != "$package_name" ]]; then
-                    new_packages+=("$pkg")
-                else
+                if [[ "$pkg" == "$package_name" ]]; then
                     INSTALLED_PACKAGES+=("$package_name")
                 fi
             done
             PACKAGES=("${new_packages[@]}")
         else
-            print_error "Failed to install $cmd"
-            return 1
+            print_warning "Failed to install $cmd"
         fi
     done
 }
