@@ -5,9 +5,6 @@
 SCRIPT_DIR=$(dirname "$(realpath "$0")")
 source "$SCRIPT_DIR/common.lib"\
 
-# Script Intro
-print_title "Setting Up Project Aesop...\n"
-
 # Set verbosity level
 AESOP_SETUP_VERBOSITY=1
 if [ "$1" == "-v" ]; then
@@ -17,6 +14,9 @@ elif [ "$1" == "-q" ]; then
 fi
 export AESOP_SETUP_VERBOSITY
 print_debug "Verbosity: $AESOP_SETUP_VERBOSITY"
+
+# Script Intro
+print_title "Setting Up Project Aesop...\n"
 
 # Cache Sudo Creds
 print_info "Requesting sudo access for installation..."

@@ -29,6 +29,7 @@ print_success() {
 
 print_title() {
     local msg=$1
+    print_debug $AESOP_SETUP_VERBOSITY
     if [ "${AESOP_SETUP_VERBOSITY}" -ge 1 ]; then
         echo -e "${CYAN}${msg}${NC}"
     fi
