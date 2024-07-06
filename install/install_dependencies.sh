@@ -145,15 +145,14 @@ execute_install_commands() {
     for cmd in "${INSTALL_COMMANDS[@]}"; do
         print_debug "Executing: $cmd"
         local package_name=$(echo "$cmd" | awk '{print $NF}')
-        if eval "$cmd"; then
+        if $cmd; then
             INSTALLED_PACKAGES+=("$package_name")
         else
-            print_warning "Failed to install $cmd"
+            print_warning "Failed to install $package_name"
             FAILED_PACKAGES+=("$package_name")
         fi
     done
 }
-
 
 split_packages() {
     if [ -z "${PACKAGES[*]}" ]; then
@@ -221,7 +220,7 @@ final_package_check() {
         done
     fi
 
-    if [[ ${#PACKAGES[@]} -gt 0 ]]; then
+    if [[ ${#FAILED_PACKAGES[@]} -gt 0 ]]; then
         print_warning "Some dependencies failed to install. Please install the following packages manually:"
         for pkg in "${FAILED_PACKAGES[@]}"; do
             echo -e "${RED}- $pkg${NC}"
