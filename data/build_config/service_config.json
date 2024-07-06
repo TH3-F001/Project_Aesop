@@ -4,6 +4,6 @@
     "log_dir": "/var/log/aesop",
     "data_dir": "/srv/aesop/data",
     "temp_dir": "tmp/aesop",
-    "venv_dir": "/srv/venv",
+    "venv_dir": "/srv/aesop/venv",
     "service_usergroup": "aesop-service"
 }
