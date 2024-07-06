@@ -141,18 +141,21 @@ update_package_manager() {
 }
 
 execute_install_commands() {
+    echo "Running installation commands..."
+    local new_packages=()
     for cmd in "${INSTALL_COMMANDS[@]}"; do
-        print_debug "Executing: $cmd"
+        echo "Executing: $cmd"
         if eval "$cmd"; then
             local package_name=$(echo "$cmd" | awk '{print $NF}')
-            for i in "${!PACKAGES[@]}"; do
-                if [[ "${PACKAGES[i]}" == "$package_name" ]]; then
-                    unset 'PACKAGES[i]'
+            new_packages=()
+            for pkg in "${PACKAGES[@]}"; do
+                if [[ "$pkg" != "$package_name" ]]; then
+                    new_packages+=("$pkg")
+                else
+                    INSTALLED_PACKAGES+=("$package_name")
                 fi
             done
-            # Remove empty elements from PACKAGES
-            PACKAGES=("${PACKAGES[@]}")
-            INSTALLED_PACKAGES+=("$package_name")
+            PACKAGES=("${new_packages[@]}")
         else
             print_error "Failed to install $cmd"
             return 1
@@ -209,8 +212,8 @@ filter_out_installed_packages() {
     done
 
     if [ ${#packages_to_install[@]} -eq 0 ]; then
-        print_error "No packages to install."
-        return 1
+        print_info "\tNo packages to install."
+        return 0
     fi
 
     PACKAGES=("${packages_to_install[@]}")
@@ -331,7 +334,7 @@ main() {
     print_info "\nInitiating final package check..."
     final_package_check
 
-#    print_batch_debug
+    print_batch_debug
 }
 
 main
