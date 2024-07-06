@@ -328,7 +328,6 @@ main() {
     # Perform Final Checking
     print_info "\nInitiating final package check..."
     final_package_check
-else
     print_batch_debug
 }
 
