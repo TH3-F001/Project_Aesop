@@ -187,7 +187,7 @@ copy_templates() {
 
             if [[ -n "${destinations[$dir_name]}" ]]; then
                 print_debug "Copying ${dir_name} templates..."
-                recursive_copy "$dir" "${destinations[$dir_name]}"
+                recursive_copy "$dir" "${destinations[$dir_name]}" > /dev/null
                 if [[ $? -ne 0 ]]; then
                     print_error "Failed to copy $dir_name templates from $dir to ${destinations[$dir_name]}"
                     return 1
@@ -233,7 +233,16 @@ create_service_user_and_group() {
 
 copy_build_cfgs() {
     run_or_sudo cp "$SRV_CFG_FILE" "$SRV_DATA_DIR/static"
+    if [[ $? -ne 0 ]]; then
+        print_error "Failed to copy $SRV_CFG_FILE to $SRV_DATA_DIR/static"
+        return 1
+    fi
+
     run_or_sudo cp "$USR_CFG_FILE" "$SRV_DATA_DIR/static"
+    if [[ $? -ne 0 ]]; then
+        print_error "Failed to copy $USR_CFG_FILE to $USR_DATA_DIR/static"
+        return 1
+    fi
 }
 
 
@@ -352,8 +361,12 @@ main() {
     print_success "Templates copied successfully."
 
     # Copy the build configs to data/static
-    print_info "\tCopying Build Configs..."
+    print_info "\nCopying Build Configs..."
     copy_build_cfgs
+    if [[ $? -ne 0 ]]; then
+        print_error "Build Configs"
+        exit 1
+    fi
 
     # Restrict file permissions for service level assets
     print_info "\nRestricting file permissions..."

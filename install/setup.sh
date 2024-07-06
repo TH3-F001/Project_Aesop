@@ -19,7 +19,7 @@ export AESOP_SETUP_VERBOSITY
 print_title "Setting Up Project Aesop..."
 
 # Cache Sudo Creds
-print_info "\nRequesting sudo access for installation..."
+print_info "Requesting sudo access for installation..."
 sudo echo "" >/dev/null
 if [ $? -ne 0 ]; then
     exit_error "Sudo request failed. Exiting..."
