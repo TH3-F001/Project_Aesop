@@ -1,6 +1,0 @@
-{
-  "client_id": "<CLIENT_ID>",
-  "client_secret": "<CLIENT_SECRET>",
-  "username": "<USERNAME>",
-  "user_agent": "personal_use_script:<CLIENT_ID>:v0.1 (by u/<USERNAME>)"
-}
