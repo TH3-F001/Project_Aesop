@@ -114,7 +114,7 @@ build_base_directories() {
 recursive_copy() {
     local src_dir=$1
     local dest_dir=$2
-
+    run_or_sudo mkdir -p "$src_dir"
     print_debug "Copying file structure from '$src_dir' to '$dest_dir'..."
 
     # Check if source and destination directories exist
@@ -231,6 +231,11 @@ create_service_user_and_group() {
     print_debug "Service user '$SERVICE_USER' created, and current user '$current_user' added to the group '$SERVICE_USER'."
 }
 
+copy_build_cfgs() {
+    run_or_sudo cp "$SRV_CFG_FILE" "$SRV_DATA_DIR/static"
+    run_or_sudo cp "$USR_CFG_FILE" "$SRV_DATA_DIR/static"
+}
+
 
 restrict_file_permissions() {
     print_debug "Restricting file permissions..."
@@ -302,7 +307,7 @@ main() {
     print_title "Building Project FileStructure..."
 
     # Check for jq
-    print_info "\nChecking if jq is installed..."
+    print_info "Checking if jq is installed..."
     check_jq_installed
     if [ $? -ne 0 ]; then
         exit_error "jq check failed."
@@ -345,6 +350,10 @@ main() {
         exit 1
     fi
     print_success "Templates copied successfully."
+
+    # Copy the build configs to data/static
+    print_info "\tCopying Build Configs..."
+    copy_build_cfgs
 
     # Restrict file permissions for service level assets
     print_info "\nRestricting file permissions..."

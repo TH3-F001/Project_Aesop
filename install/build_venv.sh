@@ -66,7 +66,7 @@ main() {
     print_title "Building Python Virtual Environment..."
 
     # Find the Python Binary
-    print_info "\nFinding Python Binary..."
+    print_info "Finding Python Binary..."
     PYTHON_BINARY=$(get_PYTHON_BINARYary)
     if [ $? -ne 0 ]; then
         print_error "Failed to restrict file permissions."

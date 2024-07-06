@@ -217,7 +217,7 @@ main() {
     print_title "Installing System Dependencies..."
 
     # Determine which package manager is installed
-    print_info "\nDetecting Package Manager..."
+    print_info "Detecting Package Manager..."
     detect_package_manager
     if [ $? -ne 0 ]; then
         print_error "Could Not find a supported Package Manager."
@@ -244,7 +244,7 @@ main() {
     print_success "Packages Parsed."
 
     #Split Packages into single array
-    print_info "Initializing Packages Array"
+    print_info "\nInitializing Packages Array"
     split_packages
     if [ $? -ne 0 ]; then
         print_error "Failed to initialize packages."
