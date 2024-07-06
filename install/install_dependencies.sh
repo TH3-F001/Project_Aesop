@@ -155,33 +155,22 @@ execute_install_commands() {
 }
 
 split_packages() {
-    if [ -z "${PACKAGES[*]}" ]; then
+    if [[ ${#PACKAGES[@]} -eq 0 ]]; then
         print_error "PACKAGES array is empty or undefined."
         return 1
     fi
 
-    local new_packages=()
-    for item in "${PACKAGES[@]}"; do
-        if [[ -z "$item" ]]; then
-            print_error "Empty item found in PACKAGES array."
-            return 1
-        fi
+    # Join all elements into a single string and split them using xargs
+    local joined_packages
+    joined_packages=$(printf "%s " "${PACKAGES[@]}")
 
-        for pkg in $item; do
-            if [[ -z "$pkg" ]]; then
-                print_error "Empty package found while splitting items."
-                return 1
-            fi
-            new_packages+=("$pkg")
-        done
-    done
+    # Use xargs to split the string into individual packages
+    read -r -a PACKAGES <<< "$(echo "$joined_packages" | xargs -n1)"
 
-    if [[ ${#new_packages[@]} -eq 0 ]]; then
+    if [[ ${#PACKAGES[@]} -eq 0 ]]; then
         print_error "No packages were split or found."
         return 1
     fi
-
-    PACKAGES=("${new_packages[@]}")
 }
 
 filter_out_installed_packages() {
@@ -205,8 +194,6 @@ filter_out_installed_packages() {
         print_info "\tNo packages to install."
         return 0
     fi
-
-    PACKAGES=("${packages_to_install[@]}")
 }
 
 
@@ -244,6 +231,11 @@ print_packages() {
 
     echo "Installed Packages:"
     for cmd in "${INSTALLED_PACKAGES[@]}"; do
+        echo -e "\t$cmd"
+    done
+
+    echo "Failed Packages:"
+    for cmd in "${FAILED_PACKAGES[@]}"; do
         echo -e "\t$cmd"
     done
 
