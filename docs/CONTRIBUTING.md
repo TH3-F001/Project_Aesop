@@ -36,11 +36,16 @@ At the moment, if you’re looking to contribute to parts of the project that in
 - **OpenAI**
 
 Don't worry about setting up all of these keys unless you need 'em. Just pick the ones relevant to the bits you’re planning to work on. Heck, depending on what you’re doing, you might not need any keys at all!
-
+SS
 
 ## ⚙️ Project Setup
+Once the setup script has been run relevent project variables and directories are stored in /srv/aesop/data/static/service_config.json for later reference
+```
+    git clone https://github.com/TH3-F001/Project_Aesop.git
+    cd Project_Aesop/install
+    ./setup
+```
 
-*(This section is coming soon. Stay tuned!)*
 
 ---
 

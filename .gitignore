@@ -7,6 +7,6 @@ logs/*
 data/dynamic/channels.json
 data/dynamic/elevenlabs_voices.json
 data/dynamic/vidgen_assistant_prompt.txt
-secrets/
+/secrets/
 .idea
 
