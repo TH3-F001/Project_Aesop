@@ -261,10 +261,10 @@ restrict_file_permissions() {
         fi
     }
 
-    change_permissions "$SRV_SECRETS_DIR" 640 750 || return 1
+    change_permissions "$SRV_SECRETS_DIR" 660 770 || return 1
     change_permissions "$SRV_OUTPUT_DIR" 660 770 || return 1
     change_permissions "$SRV_LOG_DIR" 660 770 || return 1
-    change_permissions "$SRV_DATA_DIR" 640 750 || return 1
+    change_permissions "$SRV_DATA_DIR" 660 770 || return 1
 
     print_debug "Set ownership and permissions for all service directories."
 }
