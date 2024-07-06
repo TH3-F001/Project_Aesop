@@ -142,10 +142,13 @@ update_package_manager() {
 }
 
 execute_install_commands() {
+    local cmd
+    local package_name
+
     for cmd in "${INSTALL_COMMANDS[@]}"; do
         print_debug "Executing: $cmd"
-        local package_name=$(echo "$cmd" | awk '{print $NF}')
-        if $cmd; then
+        package_name=$(echo "$cmd" | awk '{print $NF}')
+        if eval "$cmd"; then
             INSTALLED_PACKAGES+=("$package_name")
         else
             print_warning "Failed to install $package_name"
@@ -172,32 +175,6 @@ split_packages() {
         return 1
     fi
 }
-
-filter_out_installed_packages() {
-    split_packages
-    if [ $? -ne 0 ]; then
-        print_error "Failed to split packages."
-        return 1
-    fi
-
-    local packages_to_install=()
-    for package in "${PACKAGES[@]}"; do
-        if ! eval "$CHECK_CMD $package" &>/dev/null; then
-            packages_to_install+=("$package")
-            INSTALL_COMMANDS+=("$INSTALL_CMD $package")
-        else
-            INSTALLED_PACKAGES+=("$package")
-        fi
-    done
-
-    if [ ${#packages_to_install[@]} -eq 0 ]; then
-        print_info "\tNo packages to install."
-        return 0
-    fi
-}
-
-
-
 
 final_package_check() {
     if [[ ${#INSTALLED_PACKAGES[@]} -gt 0 ]]; then
@@ -281,14 +258,15 @@ main() {
     fi
     print_success "Packages Parsed."
 
-    # Filter Installed Packages
-    print_info "\nFiltering Out Installed Packages..."
-    filter_out_installed_packages
+    #Split Packages into single array
+    print_info "Initializing Packages Array"
+    split_packages
     if [ $? -ne 0 ]; then
-        print_error "Could not filter installed packages"
+        print_error "Failed to initialize packages."
         exit 1
     fi
-    print_success "Filtered installed packages"
+    print_success "Packages Initialized"
+
 
     # Update Package Manager Repository
     print_info "\nUpdating $PKG_MANAGER repository..."
