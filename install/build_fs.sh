@@ -297,7 +297,7 @@ main() {
     print_title "Building Project FileStructure..."
 
     # Check for jq
-    print_info "Checking if jq is installed..."
+    print_info "\nChecking if jq is installed..."
     check_jq_installed
     if [ $? -ne 0 ]; then
         exit_error "jq check failed."
@@ -306,7 +306,7 @@ main() {
     print_success "jq check completed successfully."
 
     # Get directories from build_configs
-    print_info "Retrieving JSON directories..."
+    print_info "\nRetrieving JSON directories..."
     retrieve_json_directories
     if [ $? -ne 0 ]; then
         exit_error "Failed to retrieve JSON directories."
@@ -315,7 +315,7 @@ main() {
     print_success "JSON directories retrieved successfully."
 
     # Make sure the templates exist
-    print_info "Checking if templates directory exists..."
+    print_info "\nChecking if templates directory exists..."
     check_templates_exist
     if [ $? -ne 0 ]; then
         exit_error "Templates Directory Doesnt exist."
@@ -324,7 +324,7 @@ main() {
     print_success "Templates Directory Exists."
 
     # Build the base directory structure
-    print_info "Building base directories..."
+    print_info "\nBuilding base directories..."
     build_base_directories
     if [ $? -ne 0 ]; then
         print_error "Failed to build base directories."
@@ -333,7 +333,7 @@ main() {
     print_success "Base directories built successfully."
 
     # Copy templates into the new directory structure
-    print_info "Copying templates..."
+    print_info "\nCopying templates..."
     copy_templates
     if [ $? -ne 0 ]; then
         print_error "Failed to copy templates."
@@ -342,7 +342,7 @@ main() {
     print_success "Templates copied successfully."
 
     # Restrict file permissions for service level assets
-    print_info "Restricting file permissions..."
+    print_info "\nRestricting file permissions..."
     restrict_file_permissions
     if [ $? -ne 0 ]; then
         print_error "Failed to restrict file permissions."
@@ -351,7 +351,7 @@ main() {
     print_success "File permissions restricted successfully."
 
     # Link service files to user's home config folder
-    print_info "Linking user directories..."
+    print_info "\nLinking user directories..."
     link_user_directories
     if [ $? -ne 0 ]; then
         print_error "Failed to link user directories."

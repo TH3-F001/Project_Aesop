@@ -293,7 +293,7 @@ main() {
     print_success "Initialized Package Manager Commands: $PKG_MANAGER"
 
     # Parse Package Rows
-    print_info "Parsing Packages..."
+    print_info "\nParsing Packages..."
     parse_package_rows
     if [ $? -ne 0 ]; then
         print_error "Could not parse packages."
@@ -302,7 +302,7 @@ main() {
     print_success "Packages Parsed."
 
     # Filter Installed Packages
-    print_info "Filtering Out Installed Packages..."
+    print_info "\nFiltering Out Installed Packages..."
     filter_out_installed_packages
     if [ $? -ne 0 ]; then
         print_error "Could not filter installed packages"
@@ -311,7 +311,7 @@ main() {
     print_success "Filtered installed packages"
 
     # Update Package Manager Repository
-    print_info "Updating $PKG_MANAGER repository..."
+    print_info "\nUpdating $PKG_MANAGER repository..."
     update_package_manager > /dev/null 2>&1 & pid=$!
     show_loading_animation $pid
     wait $pid
@@ -322,7 +322,7 @@ main() {
     print_success "$PKG_MANAGER repository updated"
 
     # Install Dependency Packages
-    print_info "Installing Packages..."
+    print_info "\nInstalling Packages..."
     execute_install_commands > /dev/null 2>&1 & pid=$!
     show_loading_animation $pid
     wait $pid
@@ -333,7 +333,7 @@ main() {
     print_success "Packages Installed."
 
     # Perform Final Checking
-    print_info "Initiating final package check..."
+    print_info "\nInitiating final package check..."
     final_package_check
 
 #    print_batch_debug
