@@ -25,6 +25,7 @@ if [ $? -ne 0 ]; then
 fi
 
 # Make all scripts executable
+print_info "\tMaking scripts exectuable..."
 chmod +x "$SCRIPT_DIR/"*.sh
 
 # Install Dependencies

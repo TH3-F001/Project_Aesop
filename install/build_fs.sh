@@ -36,6 +36,7 @@ eval_json_value() {
 
 # Check if templates directory exists
 check_templates_exist() {
+    print_debug "Templates Dire: $TEMPLATES_DIR"
     if [ ! -d "$TEMPLATES_DIR" ]; then
         print_error "$TEMPLATES_DIR does not exist or is not a directory. This shouldn't happen. Maybe check the repo?"
         return 1
@@ -316,12 +317,12 @@ main() {
 
     # Make sure the templates exist
     print_info "Checking if templates directory exists..."
-    check_templates_exists
+    check_templates_exist
     if [ $? -ne 0 ]; then
         exit_error "Templates Directory Doesnt exist."
         exit 1
     fi
-    print_success "Templates directory check completed successfully."
+    print_success "Templates Directory Exists."
 
     # Build the base directory structure
     print_info "Building base directories..."
