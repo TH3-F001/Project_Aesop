@@ -15,24 +15,6 @@ check_jq_installed() {
     fi
 }
 
-# Evaluate JSON value with environment variable substitution
-eval_json_value() {
-    local json_file=$1
-    local key=$2
-    local value
-
-    print_debug "Checking if JSON file '$json_file' exists..."
-
-    if [ ! -f "$json_file" ]; then
-        print_error "JSON file '$json_file' does not exist. Please check the file path."
-        return 1
-    fi
-
-    print_debug "Evaluating JSON value for key '$key' in file '$json_file'..."
-    value=$(run_or_sudo jq -r "$key" "$json_file")
-    eval echo "$value"
-}
-
 # Check if templates directory exists
 check_templates_exist() {
     print_debug "Templates Dire: $TEMPLATES_DIR"
@@ -225,7 +207,7 @@ create_service_user_and_group() {
         return 1
     fi
 
-    SERVICE_USER=$(eval_json_value '.SERVICE_USERgroup')
+    SERVICE_USER=$(run_or_sudo jq -r '.service_usergroup' "$SRV_CFG_FILE")
     if [[ $? -ne 0 ]]; then
         print_error "Failed to evaluate SERVICE_USER from JSON."
         return 1
@@ -325,6 +307,15 @@ main() {
     fi
     print_success "jq check completed successfully."
 
+      # Create Aesop Service user and group
+  print_info "\nCreating Aesop service user and group..."
+  create_service_user_and_group
+      if [[ $? -ne 0 ]]; then
+        print_error "Service user creation failed"
+        exit 1
+    fi
+    print_success "Service user and group created successfully."
+
     # Get directories from build_configs
     print_info "\nRetrieving JSON directories..."
     retrieve_json_directories
@@ -365,9 +356,10 @@ main() {
     print_info "\nCopying Build Configs..."
     copy_build_cfgs
     if [[ $? -ne 0 ]]; then
-        print_error "Build Configs"
+        print_error "Build configs could not be copies"
         exit 1
     fi
+    print_success "Build configs copied successfully."
 
     # Restrict file permissions for service level assets
     print_info "\nRestricting file permissions..."
