@@ -5,7 +5,7 @@ source "$SCRIPT_DIR/colors.lib"
 
 exit_error() {
     local msg="$1"
-    echo -e "[${RED}ERROR${NC}] ${msg}" 1>&2
+    echo -e "[${RED}ERROR${NC}] ${msg}\nExiting." 1>&2
     exit 1
 }
 

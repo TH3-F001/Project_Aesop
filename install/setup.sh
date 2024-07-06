@@ -3,7 +3,10 @@
 # This is the development setup script. the installer will run this,
 # it's just the bare minimum setup needed to get the project working
 SCRIPT_DIR=$(dirname "$(realpath "$0")")
-source "$SCRIPT_DIR/common.lib"
+source "$SCRIPT_DIR/common.lib"\
+
+# Script Intro
+print_title "Setting Up Project Aesop...\n"
 
 # Set verbosity level
 AESOP_SETUP_VERBOSITY=1
@@ -14,10 +17,6 @@ elif [ "$1" == "-q" ]; then
 fi
 export AESOP_SETUP_VERBOSITY
 
-# Script Intro
-print_title "Setting Up Project Aesop...\n"
-
-
 # Cache Sudo Creds
 print_info "Requesting sudo access for installation..."
 sudo echo "" >/dev/null
@@ -25,6 +24,8 @@ if [ $? -ne 0 ]; then
     exit_error "\tSudo request failed. Exiting..."
 fi
 
+# Make all scripts executable
+chmod +x "$SCRIPT_DIR/"*.sh
 
 # Install Dependencies
 print_info "\tInstalling Dependencies..."
@@ -46,7 +47,7 @@ fi
 print_info "\tGenerating Python Virtual Environment..."
 $SCRIPT_DIR/build_venv.sh
 if [ $? -ne 0 ]; then
-    exit_error "Failed to generate file structure."
+    exit_error "Failed to Generate Python Virtual Environment."
 fi
 
 
