@@ -173,7 +173,8 @@ copy_templates() {
         return 1
     fi
 
-    local destinations=(
+    # Declare the associative array properly
+    declare -A destinations=(
         [dynamic]="$SRV_DATA_DIR/dynamic"
         [secrets]="$SRV_SECRETS_DIR/"
         [static]="$SRV_DATA_DIR/static"
@@ -184,7 +185,7 @@ copy_templates() {
             dir_name=$(basename "$dir")
             print_debug "Processing template directory: $dir_name"
 
-            if [[ -n ${destinations[$dir_name]} ]]; then
+            if [[ -n "${destinations[$dir_name]}" ]]; then
                 print_debug "Copying ${dir_name} templates..."
                 recursive_copy "$dir" "${destinations[$dir_name]}"
                 if [[ $? -ne 0 ]]; then
@@ -199,6 +200,7 @@ copy_templates() {
         fi
     done
 }
+
 
 
 create_service_user_and_group() {
