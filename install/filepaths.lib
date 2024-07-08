@@ -1,13 +1,13 @@
 #!/bin/bash
 # these only point to filepaths needed to get started.
 # any paths that might be changed in the future go in either:
-# data/build_config/service_config.json
+# data/config/service_config.json
 # or
-# data/build_config/user_config.json
+# data/config/user_config.json
 
 SCRIPT_DIR=$(dirname "$(realpath "$0")")
 PROJECT_DIR=$(dirname "$SCRIPT_DIR")
-SRV_CFG_FILE="$PROJECT_DIR/data/build_config/service_config.json"
-USR_CFG_FILE="$PROJECT_DIR/data/build_config/user_config.json"
-DEPENDENCIES_CSV_PATH="$PROJECT_DIR/data/build_config/dependencies.csv"
+SRV_CFG_FILE="$PROJECT_DIR/data/config/service_config.json"
+USR_CFG_FILE="$PROJECT_DIR/data/config/user_config.json"
+DEPENDENCIES_CSV_PATH="$PROJECT_DIR/data/config/dependencies.csv"
 TEMPLATES_DIR="$PROJECT_DIR/data/static/templates"
