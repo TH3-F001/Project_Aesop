@@ -43,8 +43,42 @@ Once the setup script has been run relevent project variables and directories ar
 ```
     git clone https://github.com/TH3-F001/Project_Aesop.git
     cd Project_Aesop/install
-    ./setup
+    chmod +x *.sh
+    ./setup.sh
 ```
+
+
+
+
+### setup.sh performs the following actions:
+#### 1) install_dependencies.sh
+Installs dependencies using dependencies.csv to get package manager commands and packages to install
+#### 2) build_fs.sh
+- Builds the tool's basic directory structure
+- Copies template user level config files to the directories specified in service_config.json
+- Creates a service user/group with access to those files/folders as defined in service_config.json.
+#### 3) build_venv.sh
+- Builds a python venv in the location defined by service_config.json
+- Loads the variables from service_config.json and user_config.json into venv environment variables.
+
+## Environment Variables
+The setup process initializes several environment variables into the virtual environment. these variables are inherited from user_config.json and service_config.json
+The names of these environment variables are as follows:
+### User Directories:
+These are meant for display purposes, and are just paths to logical links which point to corresponding service directories
+  - USR_OUTPUT_DIR
+  - USR_LOG_DIR
+  - USR_DATA_DIR
+### Service Directories:
+These are where the magic actually happens and where the project should read and write data to/from
+  - SRV_SECRETS_DIR
+  - SRV_OUTPUT_DIR
+  - SRV_LOG_DIR
+  - SRV_DATA_DIR
+  - SRV_TEMP_DIR
+  - SRV_VENV_DIR
+  - SRV_USRGRP
+
 
 
 ---

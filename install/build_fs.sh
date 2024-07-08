@@ -34,6 +34,10 @@ retrieve_json_directories() {
         ["SRV_OUTPUT_DIR"]=".output_dir"
         ["SRV_LOG_DIR"]=".log_dir"
         ["SRV_DATA_DIR"]=".data_dir"
+        ["SRV_SRC_DIR"]=".src_dir"
+        ["SRV_TESTS_DIR"]=".tests_dir"
+        ["SRV_INSTALL_DIR"]=".install_dir"
+        ["SRV_ASSETS_DIR"]=".assets_dir"
     )
 
     retrieve_dir() {
@@ -96,58 +100,37 @@ build_base_directories() {
 }
 
 recursive_copy() {
-    local src_dir=$1
-    local dest_dir=$2
-    run_or_sudo mkdir -p "$src_dir"
-    print_debug "Copying file structure from '$src_dir' to '$dest_dir'..."
+    local src_dir="$1"
+    local dest_dir="$2"
 
-    # Check if source and destination directories exist
-    if [[ ! -d "$src_dir" ]]; then
-        print_error "Source directory '$src_dir' does not exist."
+    # Check if source directory exists
+    if [ ! -d "$src_dir" ]; then
+        echo "Source directory does not exist: $src_dir"
         return 1
     fi
 
-    # Function to create directories and copy files
-    copy_file() {
-        local source_file=$1
-        local relative_path="${source_file#$src_dir/}"
-        local new_filename="${relative_path/_template.json/.json}"
-        new_filename="${new_filename/_template.txt/.txt}"
-        local new_filepath="$dest_dir/$new_filename"
-        local new_filepath_dir
-        new_filepath_dir=$(dirname "$new_filepath")
+    # Create the destination directory, including parents if necessary
+    run_or_sudo mkdir -p "$dest_dir" >/dev/null
 
-        if ! run_or_sudo mkdir -p "$new_filepath_dir" >/dev/null; then
-            print_error "Failed to create directory: $new_filepath_dir"
-            return 1
-        fi
-        print_debug "Created directory: $new_filepath_dir"
-
-        if [[ ! -f "$new_filepath" ]]; then
-            print_debug "Copying $source_file to $new_filepath"
-            if ! run_or_sudo cp "$source_file" "$new_filepath" >/dev/null; then
-                print_error "Failed to copy $source_file to $new_filepath"
-                return 1
-            fi
-            print_debug "Copied $source_file to $new_filepath"
-        else
-            print_debug "File $new_filepath already exists, skipping."
-        fi
-    }
-
-    # Find and process files
-    if ! find "$src_dir" -type f | while IFS= read -r source_file; do
-        if [[ -z "$source_file" ]]; then
-            print_error "Error reading source file path."
-            return 1
-        fi
-        if ! copy_file "$source_file"; then
-            return 1
-        fi
-    done; then
+    # Check if the destination directory was created successfully
+    if [ ! -d "$dest_dir" ]; then
+        echo "Failed to create destination directory: $dest_dir"
         return 1
     fi
+
+    # Recursively copy all contents from source to destination
+    run_or_sudo cp -r "$src_dir"/* "$dest_dir" >/dev/null
+
+    # Check if the copy was successful
+    if [ $? -ne 0 ]; then
+        echo "Failed to copy contents from $src_dir to $dest_dir"
+        return 1
+    fi
+
+    echo "Successfully copied contents from $src_dir to $dest_dir"
+    return 0
 }
+
 
 copy_templates() {
     print_debug "Copying templates from '$TEMPLATES_DIR'..."
@@ -185,22 +168,6 @@ copy_templates() {
     done
 }
 
-copy_build_cfgs() {
-    run_or_sudo mkdir -p "$SRV_DATA_DIR"/static/
-    run_or_sudo cp "$SRV_CFG_FILE" "$SRV_DATA_DIR/static/"
-    if [[ $? -ne 0 ]]; then
-        print_error "Failed to copy $SRV_CFG_FILE to $SRV_DATA_DIR/static"
-        return 1
-    fi
-
-    run_or_sudo cp "$USR_CFG_FILE" "$SRV_DATA_DIR/static/"
-    if [[ $? -ne 0 ]]; then
-        print_error "Failed to copy $USR_CFG_FILE to $USR_DATA_DIR/static"
-        return 1
-    fi
-    update_usr_cfg_file
-}
-
 create_service_user_and_group() {
     print_debug "Creating service user and group..."
 
@@ -217,7 +184,7 @@ create_service_user_and_group() {
         return 1
     fi
 
-    if ! sudo adduser --system --user-group --no-create-home $SERVICE_USER; then
+    if ! sudo useradd --system --user-group --no-create-home $SERVICE_USER; then
         print_error "Failed to add service user '$SERVICE_USER'."
         return 1
     fi
@@ -230,23 +197,51 @@ create_service_user_and_group() {
     print_debug "Service user '$SERVICE_USER' created, and current user '$current_user' added to the group '$SERVICE_USER'."
 }
 
+copy_project_structure() {
+    # Define source and destination directories
+    local sources=("$PROJECT_DIR/src" "$PROJECT_DIR/tests" "$PROJECT_DIR/install" "$PROJECT_DIR/assets")
+    local destinations=("$SRV_SRC_DIR" "$SRV_TESTS_DIR" "$SRV_INSTALL_DIR" "$SRV_ASSETS_DIR")
+
+    # Iterate over the arrays and copy each source to its corresponding destination
+    for i in "${!sources[@]}"; do
+        local src="${sources[$i]}"
+        local dest="${destinations[$i]}"
+        recursive_copy "$src" "$dest"
+    done
+}
+
+
+copy_build_cfgs() {
+    run_or_sudo mkdir -p "$SRV_DATA_DIR"/static/
+    run_or_sudo cp "$SRV_CFG_FILE" "$SRV_DATA_DIR/static/"
+    if [[ $? -ne 0 ]]; then
+        print_error "Failed to copy $SRV_CFG_FILE to $SRV_DATA_DIR/static"
+        return 1
+    fi
+
+    run_or_sudo cp "$USR_CFG_FILE" "$SRV_DATA_DIR/static/"
+    if [[ $? -ne 0 ]]; then
+        print_error "Failed to copy $USR_CFG_FILE to $USR_DATA_DIR/static"
+        return 1
+    fi
+    update_usr_cfg_file
+}
+
 update_usr_cfg_file() {
     local CURRENT_USER
     CURRENT_USER=$(whoami)
 
     local json_content
-    json_content=$(cat "$USR_CFG_FILE")
-    echo "Original JSON content: $json_content"
+    json_content=$(<"$USR_CFG_FILE")  # Use < for reading file content
+
+    # Avoid potential rogue new lines by trimming input and output
     local modified_content
-    modified_content=$(echo "$json_content" | sed "s|\$(whoami)|$(whoami)|g")
-    echo "Modified JSON content: $modified_content"
+    modified_content=$(echo "$json_content" | sed "s|\$(whoami)|$(whoami)|g" | tr -d '\r')
 
     local output_file
-    output_file="$SRV_DATA_DIR/static/$(basename $USR_CFG_FILE)"
-    echo "Output File: $output_file"
-    echo "$modified_content" | sudo tee "$output_file" > /dev/null
+    output_file="$SRV_DATA_DIR/static/$(basename "$USR_CFG_FILE")"
+    echo -n "$modified_content" | sudo tee "$output_file" > /dev/null
 }
-
 
 restrict_file_permissions() {
     print_debug "Restricting file permissions..."
@@ -262,19 +257,19 @@ restrict_file_permissions() {
         local file_perms=$2
         local dir_perms=$3
 
-        run_or_sudo chown -R "$user":"$SERVICE_USER" "$dir"  >/dev/null
+        sudo chown -R "$user":"$SERVICE_USER" "$dir"  >/dev/null
         if [[ $? -ne 0 ]]; then
             print_error "Failed to change ownership for $dir."
             return 1
         fi
 
-        run_or_sudo find "$dir" -type f -exec chmod "$file_perms" {} \; >/dev/null
+        sudo find "$dir" -type f -exec chmod "$file_perms" {} \; >/dev/null
         if [[ $? -ne 0 ]]; then
             print_error "Failed to set file permissions for $dir."
             return 1
         fi
 
-        run_or_sudo find "$dir" -type d -exec chmod "$dir_perms" {} \; >/dev/null
+        sudo find "$dir" -type d -exec chmod "$dir_perms" {} \; >/dev/null
         if [[ $? -ne 0 ]]; then
             print_error "Failed to set directory permissions for $dir."
             return 1
@@ -285,8 +280,13 @@ restrict_file_permissions() {
     change_permissions "$SRV_OUTPUT_DIR" 660 770 || return 1
     change_permissions "$SRV_LOG_DIR" 660 770 || return 1
     change_permissions "$SRV_DATA_DIR" 660 770 || return 1
+    change_permissions "$SRV_SRC_DIR" 770 770 || return 1
+    change_permissions "$SRV_TESTS_DIR" 770 770 || return 1
+    change_permissions "$SRV_INSTALL_DIR" 770 770 || return 1
+    change_permissions "$SRV_ASSETS_DIR" 770 770 || return 1
 
-    print_debug "Set ownership and permissions for all service directories."
+
+    print_debug "Ownership and permissions set for all service directories."
 }
 
 
@@ -332,10 +332,10 @@ main() {
     fi
     print_success "jq check completed successfully."
 
-      # Create Aesop Service user and group
-  print_info "\nCreating Aesop service user and group..."
-  create_service_user_and_group
-      if [[ $? -ne 0 ]]; then
+          # Create Aesop Service user and group
+    print_info "\nCreating Aesop service user and group..."
+    create_service_user_and_group
+    if [[ $? -ne 0 ]]; then
         print_error "Service user creation failed"
         exit 1
     fi
@@ -379,13 +379,21 @@ main() {
 
     # Copy the build configs to data/static
     print_info "\nCopying Build Configs..."
-    copy_build_cfgs
+    copy_build_cfgs >/dev/null
     if [[ $? -ne 0 ]]; then
-        print_error "Build configs could not be copies"
+        print_error "Build configs could not be copied"
         exit 1
     fi
     print_success "Build configs copied successfully."
 
+    # Copy the source files
+    print_info "\nCopying project file structure..."
+    copy_project_structure >/dev/null
+    if [[ $? -ne 0 ]]; then
+        print_error "Project file structure could not be copied"
+        exit 1
+    fi
+    print_success "Project file structure copied successfully."
 
     # Restrict file permissions for service level assets
     print_info "\nRestricting file permissions..."

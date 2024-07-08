@@ -31,7 +31,7 @@ chmod +x "$SCRIPT_DIR/"*.sh
 
 
 # Install Dependencies
-$SCRIPT_DIR/install_dependencies.sh
+bash "$SCRIPT_DIR"/install_dependencies.sh
 if [ $? -ne 0 ]; then
     exit_error "Failed to install Dependencies."
 fi
@@ -39,7 +39,7 @@ fi
 
 # Generate File Structure
 echo -e "\n"
-$SCRIPT_DIR/build_fs.sh
+bash "$SCRIPT_DIR"/build_fs.sh
 if [ $? -ne 0 ]; then
     exit_error "Failed to generate file structure."
 fi
@@ -47,7 +47,7 @@ fi
 
 ## Create and activate python venv
 echo -e "\n"
-$SCRIPT_DIR/build_venv.sh
+bash "$SCRIPT_DIR"/build_venv.sh
 if [ $? -ne 0 ]; then
     exit_error "Failed to Generate Python Virtual Environment."
 fi
