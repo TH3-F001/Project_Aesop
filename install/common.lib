@@ -25,6 +25,8 @@ run_or_sudo() {
     # Check if there was an error
     if [ -n "$error" ]; then
         print_error "$error"
+        echo "$output"
+        return 1
     fi
 
     echo "$output"

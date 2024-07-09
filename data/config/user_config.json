@@ -1,5 +1,0 @@
-{
-    "output_dir": "/home/$(whoami)/.config/aesop/output",
-    "log_dir": "/home/$(whoami)/.config/aesop/logs",
-    "data_dir": "/home/$(whoami)/.config/aesop/data"
-}

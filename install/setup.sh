@@ -37,19 +37,12 @@ if [ $? -ne 0 ]; then
 fi
 
 
-# Generate File Structure
+# Generate App Environment Structure
 echo -e "\n"
-bash "$SCRIPT_DIR"/build_fs.sh
+bash "$SCRIPT_DIR"/build_app_environment.sh
 if [ $? -ne 0 ]; then
-    exit_error "Failed to generate file structure."
+    exit_error "Failed to generate app environment."
 fi
 
-
-## Create and activate python venv
-echo -e "\n"
-bash "$SCRIPT_DIR"/build_venv.sh
-if [ $? -ne 0 ]; then
-    exit_error "Failed to Generate Python Virtual Environment."
-fi
 
 

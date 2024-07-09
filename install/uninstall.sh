@@ -5,7 +5,9 @@
 
 sudo rm -rf /etc/aesop
 sudo rm -rf /srv/aesop
+sudo rm -rf /opt/aesop
 rm -rf ~/.config/aesop
-sudo userdel aesop-service
 sudo usermod -G aesop-service $(whoami)
-sudo groupdel aesop-service
+sudo usermod -G aesop-service aesop-service
+sudo userdel aesop-service --force
+sudo groupdel aesop-service --force

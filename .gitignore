@@ -10,3 +10,4 @@ data/dynamic/vidgen_assistant_prompt.txt
 /secrets/
 .idea
 
+/tests/_trial_temp/

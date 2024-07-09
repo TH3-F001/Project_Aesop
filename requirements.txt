@@ -1,5 +1,4 @@
 selenium
-PyYAML
 tldextract
 google-auth
 google-auth-oauthlib
@@ -18,3 +17,4 @@ praw
 newsapi-python
 pygobject
 bump2version
+python-dotenv

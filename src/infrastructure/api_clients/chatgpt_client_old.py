@@ -210,6 +210,7 @@ class ChatGPT:
 
     def get_text_from_voice(self):
         pass
+#endregion
 
 
 #region Completions API

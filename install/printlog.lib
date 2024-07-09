@@ -27,6 +27,13 @@ print_success() {
     fi
 }
 
+print_notice() {
+    local msg=$1
+    if [ "${AESOP_SETUP_VERBOSITY}" -ge 1 ]; then
+        echo -e "\n\n${MAGENTA} ${msg} ${NC}"
+    fi
+}
+
 print_title() {
     local msg=$1
     if [ "${AESOP_SETUP_VERBOSITY}" -ge 1 ]; then

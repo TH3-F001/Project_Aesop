@@ -4,13 +4,28 @@ Welcome to the Project_Aesop contribution guide! I'm real thrilled you're here t
 
 ## 🗂 Directory Structure
 
-Aesop adheres to a strict MVC (Model-View-Controller) architecture to keep things project tidy and navigable. Here's how we keep our files and folders:
+Aesop adheres to the Clean Architecture model to keep the project tidy and navigable. Here's how we keep our files and folders:
 
-- **Model (`/src/models`)**: Where all the magic happens with data handling and logic.
-- **View (`/src/views`)**: All about user interfaces and presentation.
-- **Controller (`/src/controllers`)**: The brains of the operation, directing traffic between views and models.
+- **Presentation Layer (`/src/presentation`)**: Handles user interactions through CLI, GUI, or scheduled tasks. It communicates with the Application Layer to perform actions based on user input or scheduled events.
+  - **CLI (`/src/presentation/cli`)**: Command Line Interface for direct interaction.
+  - **GUI (`/src/presentation/gui`)**: Graphical User Interface for more visual interaction.
+  - **Scheduling (`/src/presentation/scheduling`)**: Manages scheduled tasks to automate actions.
 
-For a detailed dive into the MVC pattern, take a gander at [this helpful resource](https://www.freecodecamp.org/news/the-model-view-controller-pattern-mvc-architecture-and-frameworks-explained/).
+- **Application Layer (`/src/application`)**: Orchestrates use cases and manages application flow. It ensures that the business rules are executed as expected.
+  - **Use Cases (`/src/application/use_cases`)**: Defines actions that can be performed in the system.
+  - **Services (`/src/application/services`)**: Contains application-specific logic for interacting with external systems and APIs.
+
+- **Domain Layer (`/src/domain`)**: Contains the core business logic and rules, independent of other layers.
+  - **Entities (`/src/domain/entities`)**: Core business objects like `Video` and `Channel`.
+  - **Interfaces (`/src/domain/interfaces`)**: Contracts for repositories, ensuring a consistent way to interact with data sources.
+
+- **Infrastructure Layer (`/src/infrastructure`)**: Handles data access and implements repository interfaces. It also contains utility functions like configuration loaders.
+  - **API Clients (`/src/infrastructure/api_clients`)**: Manages interactions with external APIs.
+  - **Data Access (`/src/infrastructure/data_access`)**: Implements data storage and retrieval, such as JSON file handling.
+  - **Utils (`/src/infrastructure/utils`)**: Utility functions and helpers, including configuration loading.
+
+By adhering to the Clean Architecture model, Aesop ensures a modular, maintainable, and scalable codebase, making it easier to extend and modify the project as needed.
+
 
 ## 🌾 Git Branching Strategy
 
