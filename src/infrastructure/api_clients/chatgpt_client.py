@@ -1,4 +1,4 @@
-from src.domain.models.chatgpt_requests import *
+from src.domain.data_classes.chatgpt_requests import *
 from src.infrastructure.exceptions.openai_exceptions import *
 from openai import OpenAI, Model, OpenAIError
 from time import sleep

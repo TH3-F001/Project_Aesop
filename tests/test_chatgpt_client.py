@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import patch, Mock
 from src.infrastructure.api_clients.chatgpt_client import ChatGPTClient
-from src.domain.models.chatgpt_requests import ChatGPTCompletionsRequest
+from src.domain.data_classes.chatgpt_requests import ChatGPTCompletionsRequest
 from openai import OpenAI
 from src.infrastructure.exceptions.openai_exceptions import *
 
