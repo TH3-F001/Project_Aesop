@@ -4,7 +4,7 @@ from src.domain.entities.email import Email
 
 class TestEmail(unittest.TestCase):
     def setUp(self):
-        self.valid_emails = [
+        self.valid_addresses = [
             "support@dell.com",
             "email-with-dash@example.com",
             "email.with.periods@example.com",
@@ -17,7 +17,7 @@ class TestEmail(unittest.TestCase):
         ]
 
         # Invalid Emails
-        self.invalid_emails = [
+        self.invalid_addresses = [
             "plainaddress",
             "missing.domain@",
             "@missing.localpart",
@@ -33,39 +33,39 @@ class TestEmail(unittest.TestCase):
 
     def test_valid_initialization(self):
         """Test initializing with valid email addresses."""
-        for email in self.valid_emails:
-            with self.subTest(email=email):
-                e = Email(email)
-                self.assertEqual(e.get_address(), email)
+        for address in self.valid_addresses:
+            with self.subTest(address=address):
+                self.assertEqual(Email(address).address, address)
 
     def test_invalid_initialization(self):
         """Test initializing with invalid email addresses raises ValueError."""
-        for email in self.invalid_emails:
-            with self.subTest(email=email):
-                self.assertRaises(ValueError, Email, email)
+        for address in self.invalid_addresses:
+            with self.subTest(address=address):
+                with self.assertRaises(ValueError):
+                    Email(address)
 
     def test_set_address_with_valid_emails(self):
         """Test setting valid email addresses."""
-        for email in self.valid_emails:
-            with self.subTest(email=email):
+        for address in self.valid_addresses:
+            with self.subTest(address=address):
                 e = Email("initial@valid.com")
-                e.set_address(email)
-                self.assertEqual(e.get_address(), email)
+                e.address = address
+                self.assertEqual(e.address, address)
 
     def test_set_address_with_invalid_emails(self):
         """Test setting invalid email addresses raises ValueError."""
-        for email in self.invalid_emails:
-            with self.subTest(email=email):
+        for address in self.invalid_addresses:
+            with self.subTest(address=address):
                 e = Email("initial@valid.com")  # Initialize with a valid email
                 with self.assertRaises(ValueError):
-                    e.set_address(email)
+                    e.address = address
 
     def test_get_address(self):
         """Test get_address method returns the correct email address."""
-        for email in self.valid_emails:
-            with self.subTest(email=email):
-                e = Email(email)
-                self.assertEqual(e.get_address(), email)
+        for address in self.valid_addresses:
+            with self.subTest(address=address):
+                e = Email(address)
+                self.assertEqual(e.address, address)
 
 
 
