@@ -1,5 +1,5 @@
-from common.content_helper import Helper
-from common.exceptions import RateLimitExceededException
+from src.infrastructure.utils.content_helper import Helper
+from src.application.exceptions.openai_exceptions import OpenAIRateLimitExceededException
 from openai import OpenAI, Model, OpenAIError
 from time import sleep
 from typing import List
@@ -105,7 +105,7 @@ class ChatGPT:
                 errcode = run.last_error.code
                 errmsg = run.last_error.message
                 if errcode == "rate_limit_exceeded":
-                    raise RateLimitExceededException("Request too Large")
+                    raise OpenAIRateLimitExceededException("Request too Large")
 
                 raise RuntimeError(f"ERROR: Run failed with error code {errcode}\n{errmsg}.")
             sleep(1)

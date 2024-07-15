@@ -3,7 +3,7 @@ import json
 import uuid
 from elevenlabs import VoiceSettings
 from elevenlabs.client import ElevenLabs
-from common.content_helper import Helper
+from src.infrastructure.utils.content_helper import Helper
 '''
 A class that utilizes the elevenlabs API for realistic text-to-speech conversion
 

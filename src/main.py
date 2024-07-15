@@ -1,15 +1,15 @@
 #!env/bin/python
 import os.path
 
-from common.browser import WebBrowser
-from common.youtube import YoutubeUploader, YoutubeArgs
-from common.elevenlabs import Dictator
-from common.reddit import Reddit
-from common.content_scraper import Scraper
-from common.exceptions import RateLimitExceededException
-from common.chatgpt import ChatGPT
-from common.content_helper import Helper
-from common.content_editor import Editor
+# from common.browser import WebBrowser
+from src.infrastructure.api_clients.youtube_client import YoutubeUploader, YoutubeArgs
+from src.infrastructure.api_clients.elevenlabs_client import Dictator
+from src.infrastructure.api_clients.reddit_client import Reddit
+from src.infrastructure.utils.content_scraper import Scraper
+from src.application.exceptions.openai_exceptions import OpenAIRateLimitExceededException
+from src.infrastructure.api_clients.chatgpt_client_old import ChatGPT
+from src.infrastructure.utils.content_helper import Helper
+from src.infrastructure.utils.content_editor import Editor
 from time import sleep
 from typing import Dict
 import json
@@ -313,6 +313,7 @@ def compile_video(channel_name, video_name):
 
 
 def main():
+    ...
     # channel_name = "SpaceSecrets"
     #
     # chat = ChatGPT(f"{CREDENTIAL_DIR}/gpt_auth.json")
@@ -347,24 +348,24 @@ def main():
     # cred_path = "data/restricted/reddit_auth.json"
     # reddit = Reddit(cred_path)
     # reddit.get_gilded_posts("test")
-    scraper = Scraper("data/restricted/newsapi_auth.json")
-    scraper.get_latest_news("space")
+    # scraper = Scraper("data/restricted/newsapi_auth.json")
+    # scraper.get_latest_news("space")
 
 
 if __name__ == '__main__':
-    main()
+    # main()
 
     # visla = Visla()
     # visla.log_on()
     # visla.create_video()
     # visla.download_video()
 
-    # youtube_args = YoutubeArgs("/home/neon/Videos/OBS/hello_world.mp4",
-    #                          "Hello World3.0",
-    #                          "test video",
-    #                          22,
-    #                          "test, hello world",
-    #                          "private")
-    # youtube = YoutubeUploader(youtube_args, aspect=(9,16))
-    # youtube.run()
+    youtube_args = YoutubeArgs("/home/neon/Videos/OBS/hello_world.mp4",
+                             "Hello World3.0",
+                             "test video",
+                             22,
+                             "test, hello world",
+                             "private")
+    youtube = YoutubeUploader(youtube_args, aspect=(9,16))
+    youtube.run()
 

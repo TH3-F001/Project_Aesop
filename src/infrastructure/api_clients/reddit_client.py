@@ -1,5 +1,5 @@
 import praw
-from common.content_helper import Helper
+from src.infrastructure.utils.content_helper import Helper
 
 
 class Reddit:
